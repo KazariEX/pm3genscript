@@ -54,6 +54,14 @@ importers:
         specifier: 'catalog:'
         version: 3.1.2(@types/debug@4.1.12)(jiti@2.4.2)(yaml@2.7.1)
 
+  packages/parser:
+    dependencies:
+      '@pm3genscript/shared':
+        specifier: 'workspace:'
+        version: link:../shared
+
+  packages/shared: {}
+
 packages:
 
   '@antfu/eslint-config@4.12.0':
