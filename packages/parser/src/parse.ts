@@ -1,27 +1,27 @@
 import { commands } from "@pm3genscript/shared";
+import { type Argument, Command, Dynamic, Identifier, Macro, NumberLiteral, Root, StringLiternal } from "./node";
 import { tokenize } from "./tokenize";
-import type { Argument, Command, Dynamic, Identifier, Macro, NumberLiteral, ParseError, Root, StringLiternal, Token } from "./types";
+import { transform } from "./transform";
+import type { Diagnostic, Token } from "./types";
 
 export function parse(text: string) {
     const tokenized = tokenize(text);
-    const walked = walkTokens(tokenized.tokens);
+    const walked = walkTokens(text, tokenized.tokens);
+    const transformed = transform(walked.root);
 
     return {
-        root: walked.root,
-        errors: [
-            ...tokenized.errors,
-            ...walked.errors
+        ast: transformed.ast,
+        diagnostics: [
+            ...tokenized.diagnostics,
+            ...walked.diagnostics,
+            ...transformed.diagnostics
         ]
     };
 }
 
-export function walkTokens(tokens: Token[]) {
-    const root: Root = {
-        type: "root",
-        offset: 0,
-        children: []
-    };
-    const errors: ParseError[] = [];
+export function walkTokens(text: string, tokens: Token[]) {
+    const root = new Root(text);
+    const diagnostics: Diagnostic[] = [];
     const tokenLength = tokens.length;
     let current = 0;
 
@@ -31,73 +31,50 @@ export function walkTokens(tokens: Token[]) {
         const token = tokens[current];
 
         switch (token.type) {
-            case "equal":
             case "hash": {
-                const macro: Macro = {
-                    type: "macro",
-                    offset: token.offset,
-                    name: null!,
-                    arguments: []
-                };
+                const macro = new Macro(token.offset, null!);
                 root.children.push(macro);
                 parents.unshift(macro);
 
                 const next = advance();
-                if (token.type === "equal") {
-                    macro.name = createIdentifier(token);
-                }
-                else if (next?.type === "identifier") {
-                    macro.name = createIdentifier(next);
+                if (next?.type === "identifier") {
+                    macro.name = new Identifier(next.offset, next.value);
                     current++;
                 }
                 else {
-                    macro.name = {
-                        type: "identifier",
-                        offset: token.offset + token.value.length,
-                        value: ""
-                    };
-                    errors.push({
+                    macro.name = new Identifier(token.offset + token.value.length, "");
+                    diagnostics.push({
                         message: `Expected identifier after "#", got "${next.type}".`,
-                        offset: next.offset
+                        offset: next.offset,
+                        length: next.value.length
                     });
                 }
                 break;
             }
             case "at": {
-                const dynamic: Dynamic = {
-                    type: "dynamic",
-                    offset: token.offset,
-                    name: null!
-                };
+                const dynamic = new Dynamic(token.offset, null!);
                 attach(dynamic);
 
                 const next = advance();
                 if (next?.type === "identifier" || next?.type === "number") {
-                    dynamic.name = createIdentifier(next);
+                    dynamic.name = new Identifier(next.offset, next.value);
                     current++;
                 }
                 else {
-                    dynamic.name = {
-                        type: "identifier",
-                        offset: token.offset + token.value.length,
-                        value: ""
-                    };
-                    errors.push({
+                    dynamic.name = new Identifier(token.offset + token.value.length, "");
+                    diagnostics.push({
                         message: `Expected identifier or number after "@", got "${next.type}".`,
-                        offset: next.offset
+                        offset: next.offset,
+                        length: next.value.length
                     });
                 }
                 break;
             }
+            case "equal":
             case "identifier": {
-                const identifier = createIdentifier(token);
-                if (identifier.value in commands) {
-                    const command: Command = {
-                        type: "command",
-                        offset: identifier.offset,
-                        name: identifier,
-                        arguments: []
-                    };
+                const identifier = new Identifier(token.offset, token.value);
+                if (token.type === "equal" || identifier.value in commands) {
+                    const command = new Command(identifier);
                     parents.unshift(command);
                     root.children.push(command);
                 }
@@ -108,13 +85,13 @@ export function walkTokens(tokens: Token[]) {
                 break;
             }
             case "number": {
-                const number = createNumberLiteral(token);
+                const number = new NumberLiteral(token.offset, token.value);
                 attach(number);
                 current++;
                 break;
             }
             case "string": {
-                const string = createStringLiteral(token);
+                const string = new StringLiternal(token.offset, token.value);
                 attach(string);
                 current++;
                 break;
@@ -124,7 +101,7 @@ export function walkTokens(tokens: Token[]) {
 
     return {
         root,
-        errors
+        diagnostics
     };
 
     function advance() {
@@ -135,28 +112,4 @@ export function walkTokens(tokens: Token[]) {
         const container = parents.length ? parents[0].arguments : root.children;
         container.push(node);
     }
-}
-
-function createIdentifier(token: Token): Identifier {
-    return {
-        type: "identifier",
-        offset: token.offset,
-        value: token.value
-    };
-}
-
-function createNumberLiteral(token: Token): NumberLiteral {
-    return {
-        type: "number",
-        offset: token.offset,
-        value: token.value
-    };
-}
-
-function createStringLiteral(token: Token): StringLiternal {
-    return {
-        type: "string",
-        offset: token.offset,
-        value: token.value
-    };
 }

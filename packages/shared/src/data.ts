@@ -41,7 +41,10 @@ export const macros: Record<string, MacroInfo> = {
             \n#org @main`,
             description: "在第一个例子中，我们选择从 0x800000 开始书写脚本；在第二个例子中，我们使用了一个名为 main 的动态标签来获取合适的偏移量。"
         }
-    },
+    }
+};
+
+export const commands: Record<string, CommandInfo> = {
     "=": {
         description: {
             zh: `
@@ -53,15 +56,8 @@ export const macros: Record<string, MacroInfo> = {
                 name: "text",
                 type: "string"
             }
-        ],
-        example: {
-            content: "= \"Hello world!\"",
-            description: "在将所有字符按照字符对照表转换完成后，字符串将被写入 ROM。"
-        }
-    }
-};
-
-export const commands: Record<string, CommandInfo> = {
+        ]
+    },
     end: {
         value: 0x02,
         description: {

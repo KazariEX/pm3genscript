@@ -1,8 +1,8 @@
-import type { ParseError, Token, TokenType } from "./types";
+import type { Diagnostic, Token, TokenType } from "./types";
 
 export function tokenize(text: string) {
     const tokens: Token[] = [];
-    const errors: ParseError[] = [];
+    const diagnostics: Diagnostic[] = [];
     const textLength = text.length;
     let idx = 0;
 
@@ -31,14 +31,14 @@ export function tokenize(text: string) {
                 if (isWhitespace(char)) {
                     do {
                         next = text[++idx];
-                    } while (isWhitespace(next) && idx < textLength);
+                    } while (idx < textLength && isWhitespace(next));
                     break;
                 }
                 else if (isAlpha(char)) {
                     do {
                         value += next;
                         next = text[++idx];
-                    } while ((isAlphaNumeric(next) || next === "_") && idx < textLength);
+                    } while (idx < textLength && (isAlphaNumeric(next) || next === "_"));
                     add("identifier", value, offset);
                     break;
                 }
@@ -52,7 +52,7 @@ export function tokenize(text: string) {
                             value += next;
                             next = text[++idx];
                         }
-                    } while ((isHex ? isHexNumeric(next) : isDigit(next)) && idx < textLength);
+                    } while (idx < textLength && (isHex ? isHexNumeric(next) : isDigit(next)));
                     add("number", value, offset);
                     break;
                 }
@@ -61,16 +61,17 @@ export function tokenize(text: string) {
                     do {
                         value += next;
                         next = text[++idx];
-                    } while (next !== quote && idx < textLength);
+                    } while (idx < textLength && next !== quote);
                     value += next;
                     idx++;
                     add("string", value, offset);
                     break;
                 }
                 else {
-                    errors.push({
+                    diagnostics.push({
                         message: `Unexpected character "${char}".`,
-                        offset: idx
+                        offset: idx,
+                        length: 1
                     });
                 }
             }
@@ -79,7 +80,7 @@ export function tokenize(text: string) {
 
     return {
         tokens,
-        errors
+        diagnostics
     };
 
     function add(type: TokenType, value: string, offset: number) {
