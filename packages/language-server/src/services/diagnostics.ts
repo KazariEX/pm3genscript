@@ -2,14 +2,13 @@ import { URI } from "vscode-uri";
 import type { DiagnosticSeverity, LanguageServicePlugin } from "@volar/language-service";
 import { PtsVirtualCode } from "../languagePlugin";
 
-export default (): LanguageServicePlugin => {
+export const ptsDiagnosticsPlugin = (): LanguageServicePlugin => {
     return {
         capabilities: {
             diagnosticProvider: {
                 interFileDependencies: true,
                 workspaceDiagnostics: true
-            },
-            hoverProvider: true
+            }
         },
         create(context) {
             return {
