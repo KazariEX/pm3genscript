@@ -1,20 +1,17 @@
 import { commands } from "@pm3genscript/shared";
-import { type Argument, Command, Dynamic, Identifier, Macro, NumberLiteral, Root, StringLiternal, Symbol } from "./node";
+import { type Argument, Block, Command, Dynamic, Identifier, Macro, NumberLiteral, Root, StringLiternal, Symbol } from "./node";
 import { tokenize } from "./tokenize";
-import { transform } from "./transform";
 import type { Diagnostic, Token } from "./types";
 
 export function parse(text: string) {
     const tokenized = tokenize(text);
     const walked = walkTokens(text, tokenized.tokens);
-    const transformed = transform(walked.root);
 
     return {
-        ast: transformed.ast,
+        ast: walked.root,
         diagnostics: [
             ...tokenized.diagnostics,
-            ...walked.diagnostics,
-            ...transformed.diagnostics
+            ...walked.diagnostics
         ]
     };
 }
@@ -26,6 +23,7 @@ export function walkTokens(text: string, tokens: Token[]) {
     let current = 0;
 
     const parents: (Macro | Command)[] = [];
+    let currentBlock: Block | null = null;
 
     root: while (current < tokenLength) {
         const token = tokens[current];
@@ -47,9 +45,17 @@ export function walkTokens(text: string, tokens: Token[]) {
                     });
                 }
                 const macro = new Macro(token.offset, name);
-                root.children.push(macro);
+                if (macro.canonicalName === "org") {
+                    const block = new Block(macro);
+                    currentBlock = block;
+                    root.children.push(block);
+                }
+                else {
+                    currentBlock = null;
+                    root.children.push(macro);
+                }
                 parents.unshift(macro);
-                if (macro.name.value === "break") {
+                if (macro.canonicalName === "break") {
                     break root;
                 }
                 break;
@@ -70,7 +76,7 @@ export function walkTokens(text: string, tokens: Token[]) {
                     });
                 }
                 const dynamic = new Dynamic(token.offset, name);
-                attach(dynamic);
+                attachArgument(dynamic);
                 break;
             }
             case "equal":
@@ -79,29 +85,29 @@ export function walkTokens(text: string, tokens: Token[]) {
                 if (token.type === "equal" || identifier.value in commands) {
                     const command = new Command(identifier);
                     parents.unshift(command);
-                    root.children.push(command);
+                    attachCommand(command);
                 }
                 else {
-                    attach(identifier);
+                    attachArgument(identifier);
                 }
                 current++;
                 break;
             }
             case "symbol": {
                 const symbol = new Symbol(token.offset, token.value);
-                attach(symbol);
+                attachArgument(symbol);
                 current++;
                 break;
             }
             case "number": {
                 const number = new NumberLiteral(token.offset, token.value);
-                attach(number);
+                attachArgument(number);
                 current++;
                 break;
             }
             case "string": {
                 const string = new StringLiternal(token.offset, token.value);
-                attach(string);
+                attachArgument(string);
                 current++;
                 break;
             }
@@ -117,8 +123,31 @@ export function walkTokens(text: string, tokens: Token[]) {
         return tokens[++current];
     }
 
-    function attach(node: Argument) {
-        const container = parents.length ? parents[0].arguments : root.children;
-        container.push(node);
+    function attachArgument(node: Argument) {
+        if (parents.length) {
+            parents[0].arguments.push(node);
+        }
+        else {
+            root.children.push(node);
+            diagnostics.push({
+                message: `Expected "macro" or "command" node at the root, got "${node.type}"`,
+                offset: node.offset,
+                length: node.getLength()
+            });
+        }
+    }
+
+    function attachCommand(node: Command) {
+        if (currentBlock) {
+            currentBlock.children.push(node);
+        }
+        else {
+            root.children.push(node);
+            diagnostics.push({
+                message: `Command "${node.name.value}" is not inside a block.`,
+                offset: node.offset,
+                length: node.getLength()
+            });
+        }
     }
 }

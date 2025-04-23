@@ -115,101 +115,113 @@ Root {
       "offset": 0,
       "type": "macro",
     },
-    Macro {
-      "arguments": [
-        Dynamic {
+    Block {
+      "children": [
+        Command {
+          "arguments": [
+            Dynamic {
+              "name": Identifier {
+                "offset": 35,
+                "type": "identifier",
+                "value": "2",
+              },
+              "offset": 34,
+              "type": "dynamic",
+            },
+            Symbol {
+              "offset": 37,
+              "type": "symbol",
+              "value": "MSG_FACE",
+            },
+          ],
+          "canonicalName": "msgbox",
           "name": Identifier {
-            "offset": 25,
+            "offset": 27,
             "type": "identifier",
-            "value": "1",
+            "value": "msgbox",
           },
-          "offset": 24,
-          "type": "dynamic",
+          "offset": 27,
+          "type": "command",
+        },
+        Command {
+          "arguments": [],
+          "canonicalName": "end",
+          "name": Identifier {
+            "offset": 46,
+            "type": "identifier",
+            "value": "end",
+          },
+          "offset": 46,
+          "type": "command",
         },
       ],
-      "canonicalName": "org",
-      "name": Identifier {
-        "offset": 20,
-        "type": "identifier",
-        "value": "org",
+      "label": Macro {
+        "arguments": [
+          Dynamic {
+            "name": Identifier {
+              "offset": 25,
+              "type": "identifier",
+              "value": "1",
+            },
+            "offset": 24,
+            "type": "dynamic",
+          },
+        ],
+        "canonicalName": "org",
+        "name": Identifier {
+          "offset": 20,
+          "type": "identifier",
+          "value": "org",
+        },
+        "offset": 19,
+        "type": "macro",
       },
       "offset": 19,
-      "type": "macro",
+      "type": "block",
     },
-    Command {
-      "arguments": [
-        Dynamic {
+    Block {
+      "children": [
+        Command {
+          "arguments": [
+            StringLiternal {
+              "offset": 61,
+              "type": "string",
+              "value": ""你自己魔怔吧，我要去二次元了。"",
+            },
+          ],
+          "canonicalName": "=",
           "name": Identifier {
-            "offset": 35,
+            "offset": 59,
             "type": "identifier",
-            "value": "2",
+            "value": "=",
           },
-          "offset": 34,
-          "type": "dynamic",
-        },
-            Symbol {
-          "offset": 37,
-              "type": "symbol",
-          "value": "MSG_FACE",
+          "offset": 59,
+          "type": "command",
         },
       ],
-      "canonicalName": "msgbox",
-      "name": Identifier {
-        "offset": 27,
-        "type": "identifier",
-        "value": "msgbox",
-      },
-      "offset": 27,
-      "type": "command",
-    },
-    Command {
-      "arguments": [],
-      "canonicalName": "end",
-      "name": Identifier {
-        "offset": 46,
-        "type": "identifier",
-        "value": "end",
-      },
-      "offset": 46,
-      "type": "command",
-    },
-    Macro {
-      "arguments": [
-        Dynamic {
-          "name": Identifier {
-            "offset": 57,
-            "type": "identifier",
-            "value": "2",
+      "label": Macro {
+        "arguments": [
+          Dynamic {
+            "name": Identifier {
+              "offset": 57,
+              "type": "identifier",
+              "value": "2",
+            },
+            "offset": 56,
+            "type": "dynamic",
           },
-          "offset": 56,
-          "type": "dynamic",
+        ],
+        "canonicalName": "org",
+        "name": Identifier {
+          "offset": 52,
+          "type": "identifier",
+          "value": "org",
         },
-      ],
-      "canonicalName": "org",
-      "name": Identifier {
-        "offset": 52,
-        "type": "identifier",
-        "value": "org",
+        "offset": 51,
+        "type": "macro",
       },
       "offset": 51,
-      "type": "macro",
-    },
-    Command {
-      "arguments": [
-        StringLiternal {
-          "offset": 61,
-          "type": "string",
-          "value": ""你自己魔怔吧，我要去二次元了。"",
-        },
-      ],
-      "canonicalName": "=",
-      "name": Identifier {
-        "offset": 59,
-        "type": "identifier",
-        "value": "=",
-      },
-      "offset": 59,
-      "type": "command",
+      "type": "block",
     },
   ],
   "offset": 0,
