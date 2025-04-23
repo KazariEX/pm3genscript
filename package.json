@@ -5,6 +5,7 @@
   "scripts": {
     "build": "pnpm -r build",
     "dev": "pnpm -r dev",
+    "dev:vscode": "pnpm -C packages/vscode dev",
     "release": "bumpp --no-push -c \"release: v%s\"",
     "test": "vitest"
   },

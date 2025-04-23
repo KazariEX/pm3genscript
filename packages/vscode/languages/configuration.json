@@ -1,0 +1,19 @@
+{
+  "comments": {
+    "lineComment": "//",
+    "blockComment": ["/*", "*/"]
+  },
+  "autoClosingPairs": [
+    ["\"", "\""]
+  ],
+  "surroundingPairs": [
+    ["\"", "\""]
+  ],
+  "folding": {
+    "markers": {
+      "start": "^\\s*(#org)\\b",
+      "end": "^\\s*(end|return|goto|gotostd|killscript)\\b"
+    }
+  },
+  "wordPattern": "(#|@)?\\w+"
+}

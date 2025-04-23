@@ -1,0 +1,102 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "scopeName": "source.pm3genscript",
+  "patterns": [
+    {
+      "include": "#macro"
+    },
+    {
+      "include": "#command"
+    },
+    {
+      "include": "#symbol"
+    },
+    {
+      "include": "#dynamic"
+    },
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#operator"
+    }
+  ],
+  "repository": {
+    "macro": {
+      "patterns": [{
+        "name": "keyword.control",
+        "match": "#[a-z]+\\b"
+      }]
+    },
+    "command": {
+      "patterns": [{
+        "name": "constant.character",
+        "match": "\\b[a-z][0-9a-z_]*\\b"
+      }]
+    },
+    "symbol": {
+      "patterns": [{
+        "name": "variable.parameter",
+        "match": "\\b[A-Z_][A-Z0-9_]*\\b"
+      }]
+    },
+    "dynamic": {
+      "patterns": [{
+        "name": "support.function",
+        "match": "@[\\w]*\\b"
+      }]
+    },
+    "comment": {
+      "patterns": [{
+        "name": "comment.line",
+        "match": "//.*"
+      }, {
+        "name": "comment.block",
+        "begin": "/\\*",
+        "end": "\\*/"
+      }]
+    },
+    "number": {
+      "patterns": [{
+        "name": "constant.numeric",
+        "match": "\\b0x[0-9A-Fa-f]+\\b"
+      }, {
+        "name": "constant.numeric",
+        "match": "\\b[0-9]+\\b"
+      }]
+    },
+    "string": {
+      "patterns": [{
+        "name": "string.quoted.double",
+        "begin": "\"",
+        "end": "\"",
+        "patterns": [
+          {
+            "name": "constant.character.escape",
+            "match": "\\\\h[0-9a-zA-Z]{2}"
+          },
+          {
+            "name": "constant.character.escape",
+            "match": "\\\\."
+          },
+          {
+            "name": "constant.character.escape",
+            "match": "\\[[^\\[]*\\]"
+          }
+        ]
+      }]
+    },
+    "operator": {
+      "patterns": [{
+        "name": "keyword.operator",
+        "match": "(=)"
+      }]
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "name": "vscode-pm3genscript",
+  "displayName": "Pokemon 3rd Generation Script",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Language support for pokemon-3rd-generation-script",
+  "author": "KazariEX",
+  "license": "MIT",
+  "repository": "KazariEX/pm3genscript",
+  "categories": [
+    "Programming Languages"
+  ],
+  "main": "./dist/client.js",
+  "engines": {
+    "vscode": "^1.78.0"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "pm3genscript",
+        "aliases": [
+          "Pokemon 3rd Generation Script"
+        ],
+        "extensions": [
+          ".pts"
+        ],
+        "configuration": "./languages/configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "pm3genscript",
+        "scopeName": "source.pm3genscript",
+        "path": "./syntaxes/grammars.json"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "rolldown -c",
+    "dev": "rolldown -w -c",
+    "prepack": "pnpm run build"
+  },
+  "dependencies": {
+    "@volar/language-server": "catalog:",
+    "@volar/vscode": "catalog:",
+    "reactive-vscode": "catalog:"
+  },
+  "devDependencies": {
+    "@types/vscode": "catalog:",
+    "rolldown": "catalog:"
+  }
+}

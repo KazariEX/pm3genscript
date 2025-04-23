@@ -1,0 +1,20 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "dev:vscode",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "_______"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": " ",
+          "endsPattern": "Waiting for changes..."
+        }
+      }
+    }
+  ]
+}
