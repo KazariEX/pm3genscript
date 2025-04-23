@@ -1,5 +1,6 @@
 export * from "./check";
+export * from "./node";
 export * from "./parse";
 export * from "./tokenize";
-export * from "./transform";
 export * from "./types";
+export * from "./utils";

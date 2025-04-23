@@ -1,89 +1,114 @@
 import type { ArgumentType } from "@pm3genscript/shared";
-import { type Argument, Block, type Command, Dynamic, Identifier, Macro, NumberLiteral, type Parent, StringLiternal } from "./node";
-import type { AST, ASTChild, Diagnostic } from "./types";
+import { type Argument, type Command, Dynamic, Identifier, Macro, NumberLiteral, type Parent, type Root, StringLiternal, Symbol } from "./node";
+import { forEachNode, forEachStatement } from "./utils";
+import type { Diagnostic } from "./types";
 
-export const symbolRE = /^[A-Z][A-Z0-9_]*$/;
-
-export function check(ast: AST) {
+export function check(ast: Root) {
     const diagnostics: Diagnostic[] = [];
     const resolvedValues = new Map<Argument, any>();
-    const dynamicNames = new Map<string, {
-        identifier: Identifier;
-        references: Identifier[];
+    const dynamics = new Map<string, {
+        definition: Macro;
+        dynamic: Dynamic;
+        references: Dynamic[];
     }>();
     const symbols = new Map<string, {
-        identifier: Exclude<Argument, Dynamic>;
-        references: Identifier[];
+        definition: Macro;
+        symbol: Symbol;
+        references: Symbol[];
         type: ArgumentType;
         value: any;
     }>();
 
-    for (const macro of ast.symbol.defines) {
-        if (macro.arguments.length < 2) {
-            continue;
-        }
-        const [arg0, arg1] = macro.arguments;
-        if (arg0 instanceof Identifier && symbolRE.test(arg0.value)) {
-            const name = arg0.value;
-            const [type, value] = resolveRuntimeTypeAndValue(arg1, false);
-            if (symbols.has(name)) {
-                symbols.get(name)!.identifier = arg0;
+    const references = {
+        dynamics: [] as Dynamic[],
+        symbols: [] as Symbol[]
+    };
+
+    forEachNode(ast, (node, parent) => {
+        if (node instanceof Dynamic) {
+            if (
+                parent instanceof Macro &&
+                parent.canonicalName === "org" &&
+                parent.arguments[0] === node
+            ) {
+                const name = node.name.value;
+                if (!dynamics.has(name)) {
+                    dynamics.set(name, {
+                        definition: parent,
+                        dynamic: node,
+                        references: []
+                    });
+                }
+                else {
+                    diagnostics.push({
+                        message: `Dynamic offset "@${name}" is already defined.`,
+                        offset: node.offset,
+                        length: node.getLength()
+                    });
+                }
             }
             else {
-                symbols.set(name, {
-                    identifier: arg0,
-                    references: [],
-                    type,
-                    value
-                });
+                references.dynamics.push(node);
             }
         }
-    }
-    for (const reference of ast.symbol.references) {
-        const name = reference.value;
-        if (symbols.has(name)) {
-            symbols.get(name)!.references.push(reference);
+        else if (node instanceof Symbol) {
+            if (
+                parent instanceof Macro &&
+                parent.canonicalName === "define" &&
+                parent.arguments[0] === node &&
+                parent.arguments.length >= 2
+            ) {
+                const [, arg1] = parent.arguments;
+                const name = node.value;
+                const [type, value] = resolveRuntimeTypeAndValue(arg1);
+                if (symbols.has(name)) {
+                    symbols.get(name)!.symbol = node;
+                }
+                else {
+                    symbols.set(name, {
+                        definition: parent,
+                        symbol: node,
+                        references: [],
+                        type,
+                        value
+                    });
+                }
+            }
+            else {
+                references.symbols.push(node);
+            }
         }
-        else {
-            diagnostics.push({
-                message: `Symbol "${name}" is not defined.`,
-                offset: reference.offset,
-                length: reference.getLength()
-            });
-        }
-    }
+    });
 
-    for (const dynamic of ast.dynamic.defines) {
-        const name = dynamic.name.value;
-        if (!dynamicNames.has(name)) {
-            dynamicNames.set(name, {
-                identifier: dynamic.name,
-                references: []
-            });
-        }
-        else {
-            diagnostics.push({
-                message: `Dynamic offset "@${name}" is already defined.`,
-                offset: dynamic.offset,
-                length: dynamic.getLength()
-            });
-        }
-    }
-    for (const reference of ast.dynamic.references) {
-        const name = reference.name.value;
-        if (dynamicNames.has(name)) {
-            dynamicNames.get(name)!.references.push(reference.name);
+    for (const node of references.dynamics) {
+        const name = node.name.value;
+        if (dynamics.has(name)) {
+            dynamics.get(name)!.references.push(node);
         }
         else {
             diagnostics.push({
                 message: `Dynamic offset "@${name}" is not defined.`,
-                offset: reference.offset,
-                length: reference.getLength()
+                offset: node.offset,
+                length: node.getLength()
             });
         }
     }
 
-    for (const child of forEachChild(ast.children)) {
+    for (const node of references.symbols) {
+        const name = node.value;
+        if (symbols.has(name)) {
+            symbols.get(name)!.references.push(node);
+        }
+        else {
+            diagnostics.push({
+                message: `Symbol "${name}" is not defined.`,
+                offset: node.offset,
+                length: node.getLength()
+            });
+        }
+    }
+
+    for (const child of forEachStatement(ast.children)) {
         if (child instanceof Macro) {
             checkMacro(child);
         }
@@ -95,7 +120,7 @@ export function check(ast: AST) {
     return {
         diagnostics,
         resolvedValues,
-        dynamicNames,
+        dynamics,
         symbols
     };
 
@@ -190,23 +215,24 @@ export function check(ast: AST) {
 
     function resolveRuntimeTypeAndValue(arg: Argument, canSymbol = true): [ArgumentType, any] {
         if (arg instanceof Dynamic) {
-            const value = arg.name.value;
-            resolvedValues.set(arg, value);
-            return ["pointer", value];
+            const name = arg.name.value;
+            resolvedValues.set(arg, name);
+            return ["pointer", name];
         }
         if (arg instanceof Identifier) {
-            const value = arg.value;
-            if (symbolRE.test(value)) {
-                if (canSymbol) {
-                    const symbol = symbols.get(value);
-                    if (symbol) {
-                        return [symbol.type, symbol.value];
-                    }
+            const name = arg.value;
+            resolvedValues.set(arg, name);
+            return ["identifier", name];
+        }
+        if (arg instanceof Symbol) {
+            const name = arg.value;
+            if (canSymbol) {
+                const symbol = symbols.get(name);
+                if (symbol) {
+                    return [symbol.type, symbol.value];
                 }
-                return ["symbol", value];
             }
-            resolvedValues.set(arg, value);
-            return ["identifier", value];
+            return ["symbol", name];
         }
         if (arg instanceof NumberLiteral) {
             const value = arg.value.startsWith("0x")
@@ -227,18 +253,6 @@ export function check(ast: AST) {
         }
         else {
             throw arg satisfies never;
-        }
-    }
-}
-
-function* forEachChild(children: ASTChild[]): Generator<Macro | Command> {
-    for (const child of children) {
-        if (child instanceof Block) {
-            yield child.label;
-            yield* child.children;
-        }
-        else {
-            yield child;
         }
     }
 }
