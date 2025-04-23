@@ -1,5 +1,5 @@
 import { commands } from "@pm3genscript/shared";
-import { type Argument, Command, Dynamic, Identifier, Macro, NumberLiteral, Root, StringLiternal } from "./node";
+import { type Argument, Command, Dynamic, Identifier, Macro, NumberLiteral, Root, StringLiternal, Symbol } from "./node";
 import { tokenize } from "./tokenize";
 import { transform } from "./transform";
 import type { Diagnostic, Token } from "./types";
@@ -84,6 +84,12 @@ export function walkTokens(text: string, tokens: Token[]) {
                 else {
                     attach(identifier);
                 }
+                current++;
+                break;
+            }
+            case "symbol": {
+                const symbol = new Symbol(token.offset, token.value);
+                attach(symbol);
                 current++;
                 break;
             }

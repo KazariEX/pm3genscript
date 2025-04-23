@@ -35,6 +35,20 @@ export class Root extends Node {
     }
 }
 
+export class Block extends Node {
+    children: Command[] = [];
+
+    constructor(
+        public label: Macro
+    ) {
+        super("block", label.offset);
+    }
+
+    getEnd() {
+        return this.children.length ? this.children.at(-1)!.getEnd() : this.label.getEnd();
+    }
+}
+
 export abstract class Parent extends Node {
     arguments: Argument[] = [];
 
@@ -126,6 +140,15 @@ export class Identifier extends Literal {
     }
 }
 
+export class Symbol extends Literal {
+    constructor(
+        public override offset: number,
+        public override value: string
+    ) {
+        super("symbol", offset, value);
+    }
+}
+
 export class NumberLiteral extends Literal {
     constructor(
         public override offset: number,
@@ -144,18 +167,4 @@ export class StringLiternal extends Literal {
     }
 }
 
-export type Argument = Dynamic | Identifier | NumberLiteral | StringLiternal;
-
-export class Block extends Node {
-    children: Command[] = [];
-
-    constructor(
-        public label: Macro
-    ) {
-        super("block", label.offset);
-    }
-
-    getEnd() {
-        return this.children.length ? this.children.at(-1)!.getEnd() : this.label.getEnd();
-    }
-}
+export type Argument = Dynamic | Identifier | Symbol | NumberLiteral | StringLiternal;

@@ -34,15 +34,23 @@ export function tokenize(text: string) {
                     } while (idx < textLength && isWhitespace(next));
                     break;
                 }
-                else if (isAlpha(char)) {
+                else if (isUppercaseAlpha(char)) {
                     do {
                         value += next;
                         next = text[++idx];
-                    } while (idx < textLength && (isAlphaNumeric(next) || next === "_"));
+                    } while (idx < textLength && isUppercaseAlpha(next) || isNumeric(next) || next === "_");
+                    add("symbol", value, offset);
+                    break;
+                }
+                else if (isLowercaseAlpha(char)) {
+                    do {
+                        value += next;
+                        next = text[++idx];
+                    } while (idx < textLength && (isLowercaseAlpha(next) || isNumeric(next) || next === "_"));
                     add("identifier", value, offset);
                     break;
                 }
-                else if (isDigit(char)) {
+                else if (isNumeric(char)) {
                     let isHex = false;
                     do {
                         value += next;
@@ -52,7 +60,7 @@ export function tokenize(text: string) {
                             value += next;
                             next = text[++idx];
                         }
-                    } while (idx < textLength && (isHex ? isHexNumeric(next) : isDigit(next)));
+                    } while (idx < textLength && (isHex ? isHexNumeric(next) : isNumeric(next)));
                     add("number", value, offset);
                     break;
                 }
@@ -95,21 +103,19 @@ function isWhitespace(char: string) {
     return char === " " || char === "\n" || char === "\r" || char === "\t";
 }
 
-function isAlpha(char: string) {
+function isUppercaseAlpha(char: string) {
     const code = char.charCodeAt(0);
-    return code >= 97 && code <= 122 || code >= 65 && code <= 90;
+    return code >= 65 && code <= 90;
 }
 
-function isDigit(char: string) {
+function isLowercaseAlpha(char: string) {
+    const code = char.charCodeAt(0);
+    return code >= 97 && code <= 122;
+}
+
+function isNumeric(char: string) {
     const code = char.charCodeAt(0);
     return code >= 48 && code <= 57;
-}
-
-function isAlphaNumeric(char: string) {
-    const code = char.charCodeAt(0);
-    return code >= 97 && code <= 122
-        || code >= 65 && code <= 90
-        || code >= 48 && code <= 57;
 }
 
 function isHexNumeric(char: string) {

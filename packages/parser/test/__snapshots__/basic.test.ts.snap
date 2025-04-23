@@ -54,7 +54,7 @@ exports[`basic > tokenize 1`] = `
   },
   {
     "offset": 37,
-    "type": "identifier",
+    "type": "symbol",
     "value": "MSG_FACE",
   },
   {
@@ -147,9 +147,9 @@ Root {
           "offset": 34,
           "type": "dynamic",
         },
-        Identifier {
+            Symbol {
           "offset": 37,
-          "type": "identifier",
+              "type": "symbol",
           "value": "MSG_FACE",
         },
       ],

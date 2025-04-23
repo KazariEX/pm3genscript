@@ -17,6 +17,7 @@ export interface TokenTypeMap {
     at: "at";
     equal: "equal";
     identifier: "identifier";
+    symbol: "symbol";
     number: "number";
     string: "string";
 }
