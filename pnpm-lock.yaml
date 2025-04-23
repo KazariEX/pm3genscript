@@ -42,6 +42,9 @@ catalogs:
     vitest:
       specifier: ^3.1.2
       version: 3.1.2
+    vscode-uri:
+      specifier: ^3.1.0
+      version: 3.1.0
 
 importers:
 
@@ -71,11 +74,14 @@ importers:
 
   packages/language-server:
     dependencies:
+      '@pm3genscript/parser':
+        specifier: 'workspace:'
+        version: link:../parser
       '@volar/language-server':
         specifier: 'catalog:'
         version: 2.4.12
       vscode-uri:
-        specifier: ^3.1.0
+        specifier: 'catalog:'
         version: 3.1.0
 
   packages/parser:

@@ -1,3 +1,4 @@
+import { type AST, check, type Diagnostic, parse } from "@pm3genscript/parser";
 import type { CodeMapping, LanguagePlugin, VirtualCode } from "@volar/language-server";
 import type ts from "typescript";
 import type { URI } from "vscode-uri";
@@ -21,6 +22,10 @@ export class PtsVirtualCode implements VirtualCode {
     mappings: CodeMapping[];
     embeddedCodes: VirtualCode[] = [];
 
+    ast: AST;
+    checked: ReturnType<typeof check>;
+    diagnostics: Diagnostic[] = [];
+
     constructor(
         public snapshot: ts.IScriptSnapshot
     ) {
@@ -37,5 +42,15 @@ export class PtsVirtualCode implements VirtualCode {
                 verification: true
             }
         }];
+
+        const text = this.snapshot.getText(0, this.snapshot.getLength());
+        const parsed = parse(text);
+        const checked = check(parsed.ast);
+        this.ast = parsed.ast;
+        this.checked = checked;
+        this.diagnostics = [
+            ...parsed.diagnostics,
+            ...checked.diagnostics
+        ];
     }
 }
