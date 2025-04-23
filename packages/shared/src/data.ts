@@ -1,11 +1,44 @@
-import type { CommandInfo, MacroInfo } from "./types";
+import type { CommandTemplate, MacroTemplate } from "./types";
 
-export const macros: Record<string, MacroInfo> = {
+export const macros: Record<string, MacroTemplate> = {
+    break: {
+        alias: ["stop"],
+        description: {
+            zh: `当编译器到达该指令时，它将停止处理脚本的剩余部分。在调试脚本时很有用。`
+        },
+        example: {
+            content: "#break"
+        }
+    },
+    define: {
+        alias: ["const"],
+        description: {
+            zh: `
+            \n允许我们在编译脚本时定义可以替换数字的符号。
+            \n必须使用大写字母或下划线作为符号名称，替换的数字可以是从字节到双字的任何大小。`
+        },
+        arguments: [
+            {
+                name: "symbol",
+                type: "symbol"
+            },
+            {
+                name: "value",
+                type: ["byte", "word", "dword"],
+                can: {
+                    symbol: false
+                }
+            }
+        ],
+        example: {
+            content: "#define LASTRESULT 0x800D",
+            description: "在这个例子中，我们定义了一个叫做 LASTRESULT 的符号，它的值为 0x800D。"
+        }
+    },
     dynamic: {
         description: {
             zh: `设置动态偏移量的起始基准，编译器将从这里开始查找可用空间。`
         },
-        hoisting: true,
         arguments: [
             {
                 name: "offset",
@@ -44,7 +77,7 @@ export const macros: Record<string, MacroInfo> = {
     }
 };
 
-export const commands: Record<string, CommandInfo> = {
+export const commands: Record<string, CommandTemplate> = {
     "=": {
         description: {
             zh: `
@@ -66,6 +99,57 @@ export const commands: Record<string, CommandInfo> = {
         },
         bytes: 1,
         ending: true
+    },
+    trainerbattle: {
+        value: 0x5C,
+        description: {
+            en: `Starts a trainer battle. Depending on the kind of battle, last parameters may differ.`,
+            zh: `
+            \n进入训练师对战。
+            \n如果训练师被击败，则将训练师 flag 设置为存在；
+            \n当训练师 flag 存在时，指令不生效。`
+        },
+        bytes: 14,
+        arguments: [
+            {
+                name: "kind",
+                type: "byte",
+                description: "Kind of battle"
+            },
+            {
+                name: "trainer",
+                type: "word",
+                description: "Trainer # to battle"
+            },
+            {
+                name: "reserved",
+                type: "word",
+                description: "Reserved"
+            },
+            {
+                name: "offset",
+                type: "pointer",
+                description: "Pointer to the challenge text"
+            },
+            {
+                name: "offset",
+                type: "pointer",
+                description: "Pointer to the defeat text",
+                when: (args) => args[0] !== 0x3
+            },
+            {
+                name: "offset",
+                type: "pointer",
+                description: "Pointer",
+                when: (args) => [0x1, 0x2, 0x4, 0x6, 0x8].includes(args[0])
+            },
+            {
+                name: "offset",
+                type: "pointer",
+                description: "Pointer",
+                when: (args) => [0x6, 0x8].includes(args[0])
+            }
+        ]
     },
     msgbox: {
         description: {

@@ -1,3 +1,5 @@
+import { commands, macros } from "@pm3genscript/shared";
+
 export abstract class Node {
     constructor(
         public type: string,
@@ -50,19 +52,33 @@ export abstract class Parent extends Node {
 }
 
 export class Macro extends Parent {
+    canonicalName: string;
+
     constructor(
         public override offset: number,
         public override name: Identifier
     ) {
         super("macro", offset, name);
+        this.canonicalName = macros[name.value]?.redirect ?? name.value;
+    }
+
+    get template() {
+        return macros[this.canonicalName];
     }
 }
 
 export class Command extends Parent {
+    canonicalName: string;
+
     constructor(
         public override name: Identifier
     ) {
         super("command", name.offset, name);
+        this.canonicalName = commands[name.value]?.redirect ?? name.value;
+    }
+
+    get template() {
+        return commands[this.canonicalName];
     }
 }
 

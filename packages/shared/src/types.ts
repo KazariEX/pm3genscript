@@ -1,39 +1,38 @@
-export type ParamType = "byte" | "word" | "dword" | "pointer" | "number" | "string" | "symbol" | "command";
+export type ArgumentType = "byte" | "word" | "dword" | "pointer" | "number" | "string" | "identifier" | "symbol";
 
-export interface MacroInfo {
+export interface MacroTemplate {
     alias?: string[];
     description?: Partial<Record<"en" | "zh", string>>;
     example?: {
         content: string;
         description?: string;
     };
-    hoisting?: boolean;
     redirect?: string;
-    arguments: MacroArgumentInfo[];
+    arguments?: MacroArgumentTemplate[];
 }
 
-export interface MacroArgumentInfo {
+export interface MacroArgumentTemplate {
     name: string;
     enum?: any[];
-    type?: ParamType | ParamType[];
+    type?: ArgumentType | ArgumentType[];
     can?: {
         dynamic?: boolean;
         symbol?: boolean;
     };
 }
 
-export interface CommandInfo {
+export interface CommandTemplate {
     value?: number;
     description?: Partial<Record<"en" | "zh", string>>;
     ending?: boolean;
     redirect?: string;
     bytes?: number;
-    arguments?: CommandArgumentInfo[];
+    arguments?: CommandArgumentTemplate[];
 }
 
-export interface CommandArgumentInfo {
+export interface CommandArgumentTemplate {
     name: string;
-    type?: ParamType;
+    type?: ArgumentType;
     description?: string;
-    when?: (params: any[]) => boolean;
+    when?: (args: any[]) => boolean;
 }

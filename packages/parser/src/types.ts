@@ -1,4 +1,4 @@
-import type { Block, Command, Dynamic, Macro } from "./node";
+import type { Block, Command, Dynamic, Identifier, Macro } from "./node";
 
 export interface Diagnostic {
     message: string;
@@ -27,6 +27,10 @@ export interface AST {
     dynamic: {
         defines: Dynamic[];
         references: Dynamic[];
+    };
+    symbol: {
+        defines: Macro[];
+        references: Identifier[];
     };
     children: ASTChild[];
 }

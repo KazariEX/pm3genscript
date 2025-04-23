@@ -1,5 +1,5 @@
-import { commands, macros } from "@pm3genscript/shared";
-import { Block, Command, Dynamic, Macro, type Root } from "./node";
+import { symbolRE } from "./check";
+import { Block, Command, Dynamic, Identifier, Macro, type Root } from "./node";
 import type { AST, Diagnostic } from "./types";
 
 export function transform(root: Root) {
@@ -8,20 +8,21 @@ export function transform(root: Root) {
             defines: [],
             references: []
         },
+        symbol: {
+            defines: [],
+            references: []
+        },
         children: []
     };
     const diagnostics: Diagnostic[] = [];
-    const childLength = root.children.length;
-    let current = 0;
     let currentBlock: Block | null = null;
 
-    while (current < childLength) {
-        const child = root.children[current];
+    for (const child of root.children) {
         if (child instanceof Macro) {
-            transformMacro(child);
+            processMacro(child);
         }
         else if (child instanceof Command) {
-            transformCommand(child);
+            processCommand(child);
         }
         else {
             diagnostics.push({
@@ -30,7 +31,6 @@ export function transform(root: Root) {
                 length: child.getLength()
             });
         }
-        current++;
     }
 
     return {
@@ -38,9 +38,8 @@ export function transform(root: Root) {
         diagnostics
     };
 
-    function transformMacro(macro: Macro) {
-        const name = macro.name.value;
-        switch (name) {
+    function processMacro(macro: Macro) {
+        switch (macro.canonicalName) {
             case "org": {
                 const block = new Block(macro);
                 currentBlock = block;
@@ -52,50 +51,24 @@ export function transform(root: Root) {
                 }
                 break;
             }
+            case "define": {
+                ast.symbol.defines.push(macro);
+            }
             default: {
                 currentBlock = null;
                 ast.children.push(macro);
                 break;
             }
         }
-
-        const template = getMacroTemplate(name);
-        if (template) {
-            const args = macro.arguments;
-            const templateArgs = template.arguments;
-            if (args.length !== templateArgs.length) {
-                diagnostics.push({
-                    message: `Expected ${templateArgs.length} arguments, got ${args.length}.`,
-                    offset: macro.offset,
-                    length: macro.getLength()
-                });
-            }
-        }
-        else {
-            diagnostics.push({
-                message: `Unknown macro "${name}".`,
-                offset: macro.name.offset,
-                length: macro.name.getLength()
-            });
-        }
     }
 
-    function transformCommand(command: Command) {
-        const name = command.name.value;
-        const template = getCommandTemplate(name)!;
-        const argLength = command.arguments.length;
-        const templateArgLength = template.arguments?.length ?? 0;
-        if (argLength !== templateArgLength) {
-            diagnostics.push({
-                message: `Expected ${templateArgLength} arguments, got ${argLength}.`,
-                offset: command.offset,
-                length: command.getLength()
-            });
-        }
-
+    function processCommand(command: Command) {
         for (const arg of command.arguments) {
             if (arg instanceof Dynamic) {
                 ast.dynamic.references.push(arg);
+            }
+            else if (arg instanceof Identifier && symbolRE.test(arg.value)) {
+                ast.symbol.references.push(arg);
             }
         }
 
@@ -105,26 +78,10 @@ export function transform(root: Root) {
         else {
             ast.children.push(command);
             diagnostics.push({
-                message: `Command "${name}" is not inside a block.`,
+                message: `Command "${command.name.value}" is not inside a block.`,
                 offset: command.offset,
                 length: command.getLength()
             });
         }
     }
-}
-
-function getMacroTemplate(name: string) {
-    let template = macros[name];
-    if (template?.redirect) {
-        template = macros[template.redirect];
-    }
-    return template;
-}
-
-function getCommandTemplate(name: string) {
-    let template = commands[name];
-    if (template?.redirect) {
-        template = commands[template.redirect];
-    }
-    return template;
 }

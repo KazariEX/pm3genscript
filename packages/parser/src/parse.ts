@@ -27,47 +27,50 @@ export function walkTokens(text: string, tokens: Token[]) {
 
     const parents: (Macro | Command)[] = [];
 
-    while (current < tokenLength) {
+    root: while (current < tokenLength) {
         const token = tokens[current];
 
         switch (token.type) {
             case "hash": {
-                const macro = new Macro(token.offset, null!);
-                root.children.push(macro);
-                parents.unshift(macro);
-
+                let name: Identifier;
                 const next = advance();
                 if (next?.type === "identifier") {
-                    macro.name = new Identifier(next.offset, next.value);
+                    name = new Identifier(next.offset, next.value);
                     current++;
                 }
                 else {
-                    macro.name = new Identifier(token.offset + token.value.length, "");
+                    name = new Identifier(token.offset + token.value.length, "");
                     diagnostics.push({
                         message: `Expected identifier after "#", got "${next.type}".`,
                         offset: next.offset,
                         length: next.value.length
                     });
                 }
+                const macro = new Macro(token.offset, name);
+                root.children.push(macro);
+                parents.unshift(macro);
+                if (macro.name.value === "break") {
+                    break root;
+                }
                 break;
             }
             case "at": {
-                const dynamic = new Dynamic(token.offset, null!);
-                attach(dynamic);
-
+                let name: Identifier;
                 const next = advance();
                 if (next?.type === "identifier" || next?.type === "number") {
-                    dynamic.name = new Identifier(next.offset, next.value);
+                    name = new Identifier(next.offset, next.value);
                     current++;
                 }
                 else {
-                    dynamic.name = new Identifier(token.offset + token.value.length, "");
+                    name = new Identifier(token.offset + token.value.length, "");
                     diagnostics.push({
                         message: `Expected identifier or number after "@", got "${next.type}".`,
                         offset: next.offset,
                         length: next.value.length
                     });
                 }
+                const dynamic = new Dynamic(token.offset, name);
+                attach(dynamic);
                 break;
             }
             case "equal":
