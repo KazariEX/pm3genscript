@@ -67,13 +67,12 @@ export function tokenize(text: string) {
                     add("string", value, offset);
                     break;
                 }
-                else {
-                    diagnostics.push({
-                        message: `Unexpected character "${char}".`,
-                        offset: idx,
-                        length: 1
-                    });
-                }
+                diagnostics.push({
+                    message: `Unexpected character "${char}".`,
+                    offset: idx,
+                    length: 1
+                });
+                idx++;
             }
         }
     }

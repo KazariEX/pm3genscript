@@ -1,6 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { check } from "../src/check";
 import { parse } from "../src/parse";
+import { tokenize } from "../src/tokenize";
+
+describe("tokenize", () => {
+    it("unexpected character", () => {
+        const text = `#org &1`;
+        const { diagnostics } = tokenize(text);
+
+        expect(diagnostics.length).toEqual(1);
+        expect(diagnostics[0]).toEqual({
+            message: "Unexpected character \"&\".",
+            offset: 5,
+            length: 1
+        });
+    });
+});
 
 describe("macro", () => {
     it("unknown", () => {
