@@ -4,8 +4,7 @@
   "packageManager": "pnpm@10.9.0",
   "scripts": {
     "build": "pnpm -r build",
-    "dev": "pnpm -r dev",
-    "dev:vscode": "pnpm -C packages/vscode dev",
+    "dev": "pnpm -r --filter \"!@pm3genscript/language-server\" --parallel dev",
     "release": "bumpp --no-push -c \"release: v%s\"",
     "test": "vitest"
   },

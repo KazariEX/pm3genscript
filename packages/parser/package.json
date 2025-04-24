@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "build": "tsdown",
-    "dev": "tsdown -w",
+    "dev": "tsdown -w --sourcemap",
     "prepack": "pnpm run build",
     "test": "vitest"
   },
