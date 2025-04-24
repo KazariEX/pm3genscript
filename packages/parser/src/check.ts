@@ -1,5 +1,5 @@
 import type { ArgumentType } from "@pm3genscript/shared";
-import { isDynamic, isIdentifier, isMacro, isNumberLiteral, isStringLiteral, isSymbol } from "./utils/is";
+import { isBlock, isCommand, isDynamic, isIdentifier, isMacro, isNumberLiteral, isStringLiteral, isSymbol } from "./utils/is";
 import { forEachNode, forEachStatement } from "./utils/traverse";
 import type { Argument, Command, Dynamic, Macro, Parent, Root, Symbol } from "./node";
 import type { Diagnostic } from "./types";
@@ -24,6 +24,26 @@ export function check(ast: Root) {
         dynamics: [] as Dynamic[],
         symbols: [] as Symbol[]
     };
+
+    for (const node of ast.children) {
+        if (isMacro(node) || isBlock(node)) {
+            continue;
+        }
+        else if (isCommand(node)) {
+            diagnostics.push({
+                message: `Command "${node.name.value}" is not inside a block.`,
+                offset: node.offset,
+                length: node.getLength()
+            });
+        }
+        else {
+            diagnostics.push({
+                message: `Expected "macro" or "command" node at the root, got "${node.type}"`,
+                offset: node.offset,
+                length: node.getLength()
+            });
+        }
+    }
 
     forEachNode(ast, (node, parent) => {
         if (isDynamic(node)) {

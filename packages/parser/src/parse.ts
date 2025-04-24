@@ -1,6 +1,7 @@
 import { commands } from "@pm3genscript/shared";
-import { type Argument, Block, Command, Dynamic, Identifier, Macro, NumberLiteral, Root, StringLiternal, Symbol } from "./node";
+import { Block, Command, Dynamic, Identifier, Macro, type Node, NumberLiteral, Root, StringLiternal, Symbol } from "./node";
 import { tokenize } from "./tokenize";
+import { isCommand } from "./utils/is";
 import type { Diagnostic, Token } from "./types";
 
 export function parse(text: string) {
@@ -76,7 +77,7 @@ export function walkTokens(text: string, tokens: Token[]) {
                     });
                 }
                 const dynamic = new Dynamic(token.offset, name);
-                attachArgument(dynamic);
+                attach(dynamic);
                 break;
             }
             case "equal":
@@ -85,29 +86,29 @@ export function walkTokens(text: string, tokens: Token[]) {
                 if (token.type === "equal" || identifier.value in commands) {
                     const command = new Command(identifier);
                     parents.unshift(command);
-                    attachCommand(command);
+                    attach(command);
                 }
                 else {
-                    attachArgument(identifier);
+                    attach(identifier);
                 }
                 current++;
                 break;
             }
             case "symbol": {
                 const symbol = new Symbol(token.offset, token.value);
-                attachArgument(symbol);
+                attach(symbol);
                 current++;
                 break;
             }
             case "number": {
                 const number = new NumberLiteral(token.offset, token.value);
-                attachArgument(number);
+                attach(number);
                 current++;
                 break;
             }
             case "string": {
                 const string = new StringLiternal(token.offset, token.value);
-                attachArgument(string);
+                attach(string);
                 current++;
                 break;
             }
@@ -123,31 +124,8 @@ export function walkTokens(text: string, tokens: Token[]) {
         return tokens[++current];
     }
 
-    function attachArgument(node: Argument) {
-        if (parents.length) {
-            parents[0].arguments.push(node);
-        }
-        else {
-            root.children.push(node);
-            diagnostics.push({
-                message: `Expected "macro" or "command" node at the root, got "${node.type}"`,
-                offset: node.offset,
-                length: node.getLength()
-            });
-        }
-    }
-
-    function attachCommand(node: Command) {
-        if (currentBlock) {
-            currentBlock.children.push(node);
-        }
-        else {
-            root.children.push(node);
-            diagnostics.push({
-                message: `Command "${node.name.value}" is not inside a block.`,
-                offset: node.offset,
-                length: node.getLength()
-            });
-        }
+    function attach(node: Node) {
+        const container = isCommand(node) ? currentBlock?.children : parents[0]?.arguments;
+        (container ?? root.children).push(node);
     }
 }
