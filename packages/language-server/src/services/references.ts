@@ -1,4 +1,4 @@
-import { Dynamic, forEachNode, Identifier } from "@pm3genscript/parser";
+import { Dynamic, forEachNode, Symbol } from "@pm3genscript/parser";
 import { URI } from "vscode-uri";
 import type { LanguageServicePlugin, Location } from "@volar/language-service";
 import { PtsVirtualCode } from "../languagePlugin";
@@ -39,7 +39,7 @@ export const ptsReferencesPlugin = (): LanguageServicePlugin => {
                                 })));
                             }
                         }
-                        else if (node instanceof Identifier) {
+                        else if (node instanceof Symbol) {
                             const name = node.value;
                             if (root.checked.symbols.has(name)) {
                                 const { references } = root.checked.symbols.get(name)!;
