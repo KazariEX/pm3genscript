@@ -40,7 +40,7 @@ export function walkTokens(text: string, tokens: Token[]) {
                 else {
                     name = new Identifier(token.offset + token.value.length, "");
                     diagnostics.push({
-                        message: `Expected identifier after "#", got "${next.type}".`,
+                        message: `Expected "identifier" token after "#", got "${next.type}".`,
                         offset: next.offset,
                         length: next.value.length
                     });
@@ -71,7 +71,7 @@ export function walkTokens(text: string, tokens: Token[]) {
                 else {
                     name = new Identifier(token.offset + token.value.length, "");
                     diagnostics.push({
-                        message: `Expected identifier or number after "@", got "${next.type}".`,
+                        message: `Expected "identifier" or "number" token after "@", got "${next.type}".`,
                         offset: next.offset,
                         length: next.value.length
                     });

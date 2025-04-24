@@ -10,9 +10,35 @@ describe("tokenize", () => {
 
         expect(diagnostics.length).toEqual(1);
         expect(diagnostics[0]).toEqual({
-            message: "Unexpected character \"&\".",
+            message: `Unexpected character "&".`,
             offset: 5,
             length: 1
+        });
+    });
+});
+
+describe("parse", () => {
+    it("unexpected token after hash", () => {
+        const text = `#233`;
+        const { diagnostics } = parse(text);
+
+        expect(diagnostics.length).toEqual(1);
+        expect(diagnostics[0]).toEqual({
+            message: `Expected "identifier" token after "#", got "number".`,
+            offset: 1,
+            length: 3
+        });
+    });
+
+    it("unexpected token after at", () => {
+        const text = `#org @"233"`;
+        const { diagnostics } = parse(text);
+
+        expect(diagnostics.length).toEqual(1);
+        expect(diagnostics[0]).toEqual({
+            message: `Expected "identifier" or "number" token after "@", got "string".`,
+            offset: 6,
+            length: 5
         });
     });
 });
@@ -24,7 +50,7 @@ describe("macro", () => {
 
         expect(diagnostics.length).toEqual(1);
         expect(diagnostics[0]).toEqual({
-            message: "Unknown macro \"unknown\".",
+            message: `Unknown macro "unknown".`,
             offset: 1,
             length: 7
         });
@@ -36,7 +62,7 @@ describe("macro", () => {
 
         expect(diagnostics.length).toEqual(1);
         expect(diagnostics[0]).toEqual({
-            message: "Expected 1 argument(s), got 2.",
+            message: `Expected 1 argument(s), got 2.`,
             offset: 9,
             length: 3
         });
@@ -48,7 +74,7 @@ describe("macro", () => {
 
         expect(diagnostics.length).toEqual(1);
         expect(diagnostics[0]).toEqual({
-            message: "Expected argument type \"pointer\", got \"identifier\".",
+            message: `Expected argument type "pointer", got "identifier".`,
             offset: 5,
             length: 10
         });
@@ -69,7 +95,7 @@ describe("command", () => {
 
         expect(diagnostics.length).toEqual(1);
         expect(diagnostics[0]).toEqual({
-            message: "Command \"msgbox\" is not inside a block.",
+            message: `Command "msgbox" is not inside a block.`,
             offset: 0,
             length: 14
         });
@@ -81,7 +107,7 @@ describe("command", () => {
 
         expect(diagnostics.length).toEqual(1);
         expect(diagnostics[0]).toEqual({
-            message: "Expected 2 argument(s), got 3.",
+            message: `Expected 2 argument(s), got 3.`,
             offset: 24,
             length: 3
         });
@@ -93,7 +119,7 @@ describe("command", () => {
 
         expect(diagnostics.length).toEqual(1);
         expect(diagnostics[0]).toEqual({
-            message: "Expected argument type \"byte\", got \"identifier\".",
+            message: `Expected argument type "byte", got "identifier".`,
             offset: 20,
             length: 10
         });
@@ -107,7 +133,7 @@ describe("dynamic", () => {
 
         expect(diagnostics.length).toEqual(1);
         expect(diagnostics[0]).toEqual({
-            message: "Dynamic offset \"@1\" is already defined.",
+            message: `Dynamic offset "@1" is already defined.`,
             offset: 26,
             length: 2
         });
@@ -119,7 +145,7 @@ describe("dynamic", () => {
 
         expect(diagnostics.length).toEqual(1);
         expect(diagnostics[0]).toEqual({
-            message: "Dynamic offset \"@2\" is not defined.",
+            message: `Dynamic offset "@2" is not defined.`,
             offset: 28,
             length: 2
         });
@@ -133,7 +159,7 @@ describe("symbol", () => {
 
         expect(diagnostics.length).toEqual(2);
         expect(diagnostics[0]).toEqual({
-            message: "Symbol \"MSG_FATE\" is not defined.",
+            message: `Symbol "MSG_FATE" is not defined.`,
             offset: 20,
             length: 8
         });
@@ -147,7 +173,7 @@ describe("other", () => {
 
         expect(diagnostics.length).toEqual(1);
         expect(diagnostics[0]).toEqual({
-            message: "Expected \"macro\" or \"command\" node at the root, got \"number\"",
+            message: `Expected "macro" or "command" node at the root, got "number"`,
             offset: 0,
             length: 3
         });
