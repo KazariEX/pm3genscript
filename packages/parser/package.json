@@ -2,11 +2,13 @@
   "name": "@pm3genscript/parser",
   "type": "module",
   "version": "0.0.0",
-  "description": "",
+  "description": "Parser for pm3genscript",
   "author": "KazariEX",
   "license": "MIT",
   "repository": "KazariEX/pm3genscript",
-  "keywords": [],
+  "keywords": [
+    "pokemon"
+  ],
   "exports": {
     ".": "./dist/index.js"
   },

@@ -3,7 +3,7 @@
   "displayName": "Pokemon 3rd Generation Script",
   "version": "0.0.0",
   "private": true,
-  "description": "Language support for pokemon-3rd-generation-script",
+  "description": "Language support for pm3genscript",
   "author": "KazariEX",
   "license": "MIT",
   "repository": "KazariEX/pm3genscript",

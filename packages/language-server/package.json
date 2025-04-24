@@ -2,11 +2,13 @@
   "name": "@pm3genscript/language-server",
   "type": "module",
   "version": "0.0.0",
-  "description": "",
+  "description": "Language server for pm3genscript",
   "author": "KazariEX",
   "license": "MIT",
   "repository": "KazariEX/pm3genscript",
-  "keywords": [],
+  "keywords": [
+    "pokemon"
+  ],
   "exports": {
     ".": "./dist/index.js"
   },
