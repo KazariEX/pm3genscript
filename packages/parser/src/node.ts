@@ -53,8 +53,8 @@ export abstract class Parent extends Node {
     arguments: Argument[] = [];
 
     constructor(
-        public override type: string,
-        public override offset: number,
+        type: string,
+        offset: number,
         public name: Identifier
     ) {
         super(type, offset);
@@ -68,10 +68,7 @@ export abstract class Parent extends Node {
 export class Macro extends Parent {
     canonicalName: string;
 
-    constructor(
-        public override offset: number,
-        public override name: Identifier
-    ) {
+    constructor(offset: number, name: Identifier) {
         super("macro", offset, name);
         this.canonicalName = macros[name.value]?.redirect ?? name.value;
     }
@@ -84,9 +81,7 @@ export class Macro extends Parent {
 export class Command extends Parent {
     canonicalName: string;
 
-    constructor(
-        public override name: Identifier
-    ) {
+    constructor(name: Identifier) {
         super("command", name.offset, name);
         this.canonicalName = commands[name.value]?.redirect ?? name.value;
     }
@@ -98,7 +93,7 @@ export class Command extends Parent {
 
 export class Dynamic extends Node {
     constructor(
-        public override offset: number,
+        offset: number,
         public name: Identifier
     ) {
         super("dynamic", offset);
@@ -111,8 +106,8 @@ export class Dynamic extends Node {
 
 export abstract class Literal extends Node {
     constructor(
-        public override type: string,
-        public override offset: number,
+        type: string,
+        offset: number,
         public value: string
     ) {
         super(type, offset);
@@ -132,37 +127,25 @@ export abstract class Literal extends Node {
 }
 
 export class Identifier extends Literal {
-    constructor(
-        public override offset: number,
-        public override value: string
-    ) {
+    constructor(offset: number, value: string) {
         super("identifier", offset, value);
     }
 }
 
 export class Symbol extends Literal {
-    constructor(
-        public override offset: number,
-        public override value: string
-    ) {
+    constructor(offset: number, value: string) {
         super("symbol", offset, value);
     }
 }
 
 export class NumberLiteral extends Literal {
-    constructor(
-        public override offset: number,
-        public override value: string
-    ) {
+    constructor(offset: number, value: string) {
         super("number", offset, value);
     }
 }
 
 export class StringLiternal extends Literal {
-    constructor(
-        public override offset: number,
-        public override value: string
-    ) {
+    constructor(offset: number, value: string) {
         super("string", offset, value);
     }
 }
