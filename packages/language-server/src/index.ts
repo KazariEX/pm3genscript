@@ -1,9 +1,10 @@
 import { createConnection, createServer, createSimpleProject } from "@volar/language-server/node";
 import { ptsLanguagePlugin } from "./languagePlugin";
-import { ptsDefinitionPlugin } from "./services/definition";
-import { ptsDiagnosticsPlugin } from "./services/diagnostics";
-import { ptsReferencesPlugin } from "./services/references";
-import { ptsRenamePlugin } from "./services/rename";
+import { createDefinitionPlugin } from "./services/definition";
+import { createDiagnosticsPlugin } from "./services/diagnostics";
+import { createHoverPlugin } from "./services/hover";
+import { createReferencesPlugin } from "./services/references";
+import { createRenamePlugin } from "./services/rename";
 
 const connection = createConnection();
 const server = createServer(connection);
@@ -15,10 +16,11 @@ connection.onInitialize((params) => {
         params,
         createSimpleProject([ptsLanguagePlugin]),
         [
-            ptsDefinitionPlugin(),
-            ptsDiagnosticsPlugin(),
-            ptsReferencesPlugin(),
-            ptsRenamePlugin()
+            createDefinitionPlugin(),
+            createDiagnosticsPlugin(),
+            createHoverPlugin(),
+            createReferencesPlugin(),
+            createRenamePlugin()
         ]
     );
 });

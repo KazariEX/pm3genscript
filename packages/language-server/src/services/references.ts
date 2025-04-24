@@ -3,7 +3,7 @@ import { URI } from "vscode-uri";
 import type { LanguageServicePlugin, Location } from "@volar/language-service";
 import { PtsVirtualCode } from "../languagePlugin";
 
-export const ptsReferencesPlugin = (): LanguageServicePlugin => {
+export const createReferencesPlugin = (): LanguageServicePlugin => {
     return {
         capabilities: {
             referencesProvider: true
@@ -19,8 +19,8 @@ export const ptsReferencesPlugin = (): LanguageServicePlugin => {
                         return;
                     }
 
-                    const results: Location[] = [];
                     const offset = document.offsetAt(position);
+                    const results: Location[] = [];
 
                     forEachNode(root.ast, (node) => {
                         if (offset < node.offset || offset > node.getEnd()) {

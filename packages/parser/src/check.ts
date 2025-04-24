@@ -8,13 +8,13 @@ export function check(ast: Root) {
     const diagnostics: Diagnostic[] = [];
     const resolvedValues = new Map<Argument, any>();
     const dynamics = new Map<string, {
-        definition: Macro;
-        dynamic: Dynamic;
+        macro: Macro;
+        definition: Dynamic;
         references: Dynamic[];
     }>();
     const symbols = new Map<string, {
-        definition: Macro;
-        symbol: Symbol;
+        macro: Macro;
+        definition: Symbol;
         references: Symbol[];
         type: ArgumentType;
         value: any;
@@ -55,8 +55,8 @@ export function check(ast: Root) {
                 const name = node.name.value;
                 if (!dynamics.has(name)) {
                     dynamics.set(name, {
-                        definition: parent,
-                        dynamic: node,
+                        macro: parent,
+                        definition: node,
                         references: []
                     });
                 }
@@ -83,12 +83,12 @@ export function check(ast: Root) {
                 const name = node.value;
                 const [type, value] = resolveRuntimeTypeAndValue(arg1);
                 if (symbols.has(name)) {
-                    symbols.get(name)!.symbol = node;
+                    symbols.get(name)!.definition = node;
                 }
                 else {
                     symbols.set(name, {
-                        definition: parent,
-                        symbol: node,
+                        macro: parent,
+                        definition: node,
                         references: [],
                         type,
                         value

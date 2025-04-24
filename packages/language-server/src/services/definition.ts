@@ -3,7 +3,7 @@ import { URI } from "vscode-uri";
 import type { LanguageServicePlugin, LocationLink } from "@volar/language-service";
 import { PtsVirtualCode } from "../languagePlugin";
 
-export const ptsDefinitionPlugin = (): LanguageServicePlugin => {
+export const createDefinitionPlugin = (): LanguageServicePlugin => {
     return {
         capabilities: {
             definitionProvider: true
@@ -19,25 +19,25 @@ export const ptsDefinitionPlugin = (): LanguageServicePlugin => {
                         return;
                     }
 
-                    const results: LocationLink[] = [];
                     const offset = document.offsetAt(position);
+                    const results: LocationLink[] = [];
 
-                    forEachNode(root.ast, (node, parent) => {
+                    forEachNode(root.ast, (node) => {
                         if (offset < node.offset || offset > node.getEnd()) {
                             return;
                         }
                         if (isDynamic(node)) {
-                            for (const [, { dynamic, references }] of root.checked.dynamics) {
+                            for (const [, { macro, definition, references }] of root.checked.dynamics) {
                                 if (references.includes(node)) {
                                     results.push({
                                         targetUri: root.uri.toString(),
                                         targetRange: {
-                                            start: document.positionAt(parent!.offset),
-                                            end: document.positionAt(parent!.getEnd())
+                                            start: document.positionAt(macro.offset),
+                                            end: document.positionAt(macro.getEnd())
                                         },
                                         targetSelectionRange: {
-                                            start: document.positionAt(dynamic.offset),
-                                            end: document.positionAt(dynamic.getEnd())
+                                            start: document.positionAt(definition.offset),
+                                            end: document.positionAt(definition.getEnd())
                                         }
                                     });
                                     break;
@@ -45,17 +45,17 @@ export const ptsDefinitionPlugin = (): LanguageServicePlugin => {
                             }
                         }
                         else if (isSymbol(node)) {
-                            for (const [, { symbol, references }] of root.checked.symbols) {
+                            for (const [, { macro, definition, references }] of root.checked.symbols) {
                                 if (references.includes(node)) {
                                     results.push({
                                         targetUri: root.uri.toString(),
                                         targetRange: {
-                                            start: document.positionAt(parent!.offset),
-                                            end: document.positionAt(parent!.getEnd())
+                                            start: document.positionAt(macro.offset),
+                                            end: document.positionAt(macro.getEnd())
                                         },
                                         targetSelectionRange: {
-                                            start: document.positionAt(symbol.offset),
-                                            end: document.positionAt(symbol.getEnd())
+                                            start: document.positionAt(definition.offset),
+                                            end: document.positionAt(definition.getEnd())
                                         }
                                     });
                                     break;

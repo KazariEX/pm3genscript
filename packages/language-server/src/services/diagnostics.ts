@@ -2,7 +2,7 @@ import { URI } from "vscode-uri";
 import type { DiagnosticSeverity, LanguageServicePlugin } from "@volar/language-service";
 import { PtsVirtualCode } from "../languagePlugin";
 
-export const ptsDiagnosticsPlugin = (): LanguageServicePlugin => {
+export const createDiagnosticsPlugin = (): LanguageServicePlugin => {
     return {
         capabilities: {
             diagnosticProvider: {

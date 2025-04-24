@@ -3,7 +3,7 @@ import { URI } from "vscode-uri";
 import type { LanguageServicePlugin, Range, TextEdit } from "@volar/language-service";
 import { PtsVirtualCode } from "../languagePlugin";
 
-export const ptsRenamePlugin = (): LanguageServicePlugin => {
+export const createRenamePlugin = (): LanguageServicePlugin => {
     return {
         capabilities: {
             renameProvider: {
@@ -21,8 +21,9 @@ export const ptsRenamePlugin = (): LanguageServicePlugin => {
                         return;
                     }
 
-                    const results: TextEdit[] = [];
                     const offset = document.offsetAt(position);
+                    const results: TextEdit[] = [];
+
                     forEachNode(root.ast, (node) => {
                         if (offset < node.offset || offset > node.getEnd()) {
                             return;
@@ -30,8 +31,8 @@ export const ptsRenamePlugin = (): LanguageServicePlugin => {
                         if (isDynamic(node)) {
                             const name = node.name.value;
                             if (root.checked.dynamics.has(name)) {
-                                const { dynamic, references } = root.checked.dynamics.get(name)!;
-                                results.push(...[dynamic, ...references].map(({ name }) => ({
+                                const { definition, references } = root.checked.dynamics.get(name)!;
+                                results.push(...[definition, ...references].map(({ name }) => ({
                                     range: {
                                         start: document.positionAt(name.offset),
                                         end: document.positionAt(name.getEnd())
@@ -43,8 +44,8 @@ export const ptsRenamePlugin = (): LanguageServicePlugin => {
                         else if (isSymbol(node)) {
                             const name = node.value;
                             if (root.checked.symbols.has(name)) {
-                                const { symbol, references } = root.checked.symbols.get(name)!;
-                                results.push(...[symbol, ...references].map((node) => ({
+                                const { definition, references } = root.checked.symbols.get(name)!;
+                                results.push(...[definition, ...references].map((node) => ({
                                     range: {
                                         start: document.positionAt(node.offset),
                                         end: document.positionAt(node.getEnd())
