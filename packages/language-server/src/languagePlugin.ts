@@ -54,4 +54,8 @@ export class PtsVirtualCode implements VirtualCode {
             ...checked.diagnostics
         ];
     }
+
+    static is(code: unknown) {
+        return code instanceof PtsVirtualCode;
+    }
 }

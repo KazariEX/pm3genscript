@@ -1,4 +1,4 @@
-import { Dynamic, forEachNode, Symbol } from "@pm3genscript/parser";
+import { forEachNode, isDynamic, isSymbol } from "@pm3genscript/parser";
 import { URI } from "vscode-uri";
 import type { LanguageServicePlugin, Range, TextEdit } from "@volar/language-service";
 import { PtsVirtualCode } from "../languagePlugin";
@@ -17,7 +17,7 @@ export const ptsRenamePlugin = (): LanguageServicePlugin => {
                     const decoded = context.decodeEmbeddedDocumentUri(uri);
                     const sourceScript = decoded && context.language.scripts.get(decoded[0]);
                     const root = sourceScript?.generated?.root;
-                    if (!(root instanceof PtsVirtualCode)) {
+                    if (!PtsVirtualCode.is(root)) {
                         return;
                     }
 
@@ -27,7 +27,7 @@ export const ptsRenamePlugin = (): LanguageServicePlugin => {
                         if (offset < node.offset || offset > node.getEnd()) {
                             return;
                         }
-                        if (node instanceof Dynamic) {
+                        if (isDynamic(node)) {
                             const name = node.name.value;
                             if (root.checked.dynamics.has(name)) {
                                 const { dynamic, references } = root.checked.dynamics.get(name)!;
@@ -40,7 +40,7 @@ export const ptsRenamePlugin = (): LanguageServicePlugin => {
                                 })));
                             }
                         }
-                        else if (node instanceof Symbol) {
+                        else if (isSymbol(node)) {
                             const name = node.value;
                             if (root.checked.symbols.has(name)) {
                                 const { symbol, references } = root.checked.symbols.get(name)!;
@@ -50,7 +50,7 @@ export const ptsRenamePlugin = (): LanguageServicePlugin => {
                                         end: document.positionAt(node.getEnd())
                                     },
                                     newText: newName
-                                })))
+                                })));
                             }
                         }
                     });
@@ -66,7 +66,7 @@ export const ptsRenamePlugin = (): LanguageServicePlugin => {
                     const decoded = context.decodeEmbeddedDocumentUri(uri);
                     const sourceScript = decoded && context.language.scripts.get(decoded[0]);
                     const root = sourceScript?.generated?.root;
-                    if (!(root instanceof PtsVirtualCode)) {
+                    if (!PtsVirtualCode.is(root)) {
                         return;
                     }
 
@@ -76,8 +76,8 @@ export const ptsRenamePlugin = (): LanguageServicePlugin => {
                         if (offset < node.offset || offset > node.getEnd()) {
                             return;
                         }
-                        if (node instanceof Dynamic || node instanceof Symbol) {
-                            const target = node instanceof Dynamic ? node.name : node;
+                        if (isDynamic(node) || isSymbol(node)) {
+                            const target = isDynamic(node) ? node.name : node;
                             result = {
                                 start: document.positionAt(target.offset),
                                 end: document.positionAt(node.getEnd())

@@ -1,4 +1,5 @@
-import { Block, Command, Dynamic, Macro, type Node, Parent, Root } from "./node";
+import { isBlock, isCommand, isDynamic, isMacro, isRoot } from "./is";
+import type { Command, Macro, Node } from "../node";
 
 export function forEachNode(
     node: Node,
@@ -11,24 +12,24 @@ export function forEachNode(
         visit(node, parents[parents.length - 1], parents);
 
         parents.push(node);
-        if (node instanceof Root) {
+        if (isRoot(node)) {
             for (const child of node.children) {
                 traverse(child);
             }
         }
-        else if (node instanceof Block) {
+        else if (isBlock(node)) {
             traverse(node.label);
             for (const child of node.children) {
                 traverse(child);
             }
         }
-        else if (node instanceof Parent) {
+        else if (isMacro(node) || isCommand(node)) {
             traverse(node.name);
             for (const arg of node.arguments) {
                 traverse(arg);
             }
         }
-        else if (node instanceof Dynamic) {
+        else if (isDynamic(node)) {
             traverse(node.name);
         }
         parents.pop();
@@ -37,11 +38,11 @@ export function forEachNode(
 
 export function* forEachStatement(children: Node[]): Generator<Macro | Command> {
     for (const child of children) {
-        if (child instanceof Block) {
+        if (isBlock(child)) {
             yield child.label;
             yield* child.children;
         }
-        else if (child instanceof Macro || child instanceof Command) {
+        else if (isMacro(child) || isCommand(child)) {
             yield child;
         }
     }

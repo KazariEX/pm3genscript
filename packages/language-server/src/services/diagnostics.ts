@@ -17,7 +17,7 @@ export const ptsDiagnosticsPlugin = (): LanguageServicePlugin => {
                     const decoded = context.decodeEmbeddedDocumentUri(uri);
                     const sourceScript = decoded && context.language.scripts.get(decoded[0]);
                     const root = sourceScript?.generated?.root;
-                    if (!(root instanceof PtsVirtualCode)) {
+                    if (!PtsVirtualCode.is(root)) {
                         return;
                     }
 

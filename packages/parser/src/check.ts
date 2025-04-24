@@ -1,6 +1,7 @@
 import type { ArgumentType } from "@pm3genscript/shared";
-import { type Argument, type Command, Dynamic, Identifier, Macro, NumberLiteral, type Parent, type Root, StringLiternal, Symbol } from "./node";
-import { forEachNode, forEachStatement } from "./utils";
+import { isDynamic, isIdentifier, isMacro, isNumberLiteral, isStringLiteral, isSymbol } from "./utils/is";
+import { forEachNode, forEachStatement } from "./utils/traverse";
+import type { Argument, Command, Dynamic, Macro, Parent, Root, Symbol } from "./node";
 import type { Diagnostic } from "./types";
 
 export function check(ast: Root) {
@@ -25,9 +26,9 @@ export function check(ast: Root) {
     };
 
     forEachNode(ast, (node, parent) => {
-        if (node instanceof Dynamic) {
+        if (isDynamic(node)) {
             if (
-                parent instanceof Macro &&
+                parent && isMacro(parent) &&
                 parent.canonicalName === "org" &&
                 parent.arguments[0] === node
             ) {
@@ -51,9 +52,9 @@ export function check(ast: Root) {
                 references.dynamics.push(node);
             }
         }
-        else if (node instanceof Symbol) {
+        else if (isSymbol(node)) {
             if (
-                parent instanceof Macro &&
+                parent && isMacro(parent) &&
                 parent.canonicalName === "define" &&
                 parent.arguments[0] === node &&
                 parent.arguments.length >= 2
@@ -108,13 +109,8 @@ export function check(ast: Root) {
         }
     }
 
-    for (const child of forEachStatement(ast.children)) {
-        if (child instanceof Macro) {
-            checkMacro(child);
-        }
-        else {
-            checkCommand(child);
-        }
+    for (const node of forEachStatement(ast.children)) {
+        isMacro(node) ? checkMacro(node) : checkCommand(node);
     }
 
     return {
@@ -214,17 +210,12 @@ export function check(ast: Root) {
     }
 
     function resolveRuntimeTypeAndValue(arg: Argument, canSymbol = true): [ArgumentType, any] {
-        if (arg instanceof Dynamic) {
-            const name = arg.name.value;
-            resolvedValues.set(arg, name);
-            return ["pointer", name];
-        }
-        if (arg instanceof Identifier) {
+        if (isIdentifier(arg)) {
             const name = arg.value;
             resolvedValues.set(arg, name);
             return ["identifier", name];
         }
-        if (arg instanceof Symbol) {
+        if (isSymbol(arg)) {
             const name = arg.value;
             if (canSymbol) {
                 const symbol = symbols.get(name);
@@ -234,7 +225,7 @@ export function check(ast: Root) {
             }
             return ["symbol", name];
         }
-        if (arg instanceof NumberLiteral) {
+        if (isNumberLiteral(arg)) {
             const value = arg.value.startsWith("0x")
                 ? Number.parseInt(arg.value.slice(2), 16)
                 : Number.parseInt(arg.value);
@@ -246,10 +237,16 @@ export function check(ast: Root) {
                 : "number";
             return [type, value];
         }
-        if (arg instanceof StringLiternal) {
+        if (isStringLiteral(arg)) {
             const value = arg.value;
             resolvedValues.set(arg, value);
             return ["string", value];
+        }
+        // HACK: 放开头会导致不可预测的类型收缩行为
+        if (isDynamic(arg)) {
+            const name = arg.name.value;
+            resolvedValues.set(arg, name);
+            return ["pointer", name];
         }
         else {
             throw arg satisfies never;
