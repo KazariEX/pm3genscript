@@ -1,6 +1,8 @@
 import type { CommandTemplate, MacroTemplate } from "./types";
 
-export const macros: Record<string, MacroTemplate> = {
+export const macros: Record<string, MacroTemplate | {
+    redirect: string;
+}> = {
     break: {
         alias: ["stop"],
         description: {
@@ -77,7 +79,9 @@ export const macros: Record<string, MacroTemplate> = {
     }
 };
 
-export const commands: Record<string, CommandTemplate> = {
+export const commands: Record<string, CommandTemplate | {
+    redirect: string;
+}> = {
     "=": {
         description: {
             zh: `

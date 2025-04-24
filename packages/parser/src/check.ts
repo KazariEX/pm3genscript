@@ -159,7 +159,7 @@ export function check(ast: Root) {
             const arg = args[i];
             const templateArg = templateArgs[i];
             if (!arg || !templateArg) {
-                reportArgumentCountMismatch(arg, args, templateArgs.length, macro);
+                reportArgumentCountMismatch(macro, templateArgs.length);
                 break;
             }
 
@@ -192,38 +192,42 @@ export function check(ast: Root) {
         const length = Math.max(args.length, templateArgs.length);
         const values: any[] = [];
 
+        let idx = 0;
+        let templateIdx = 0;
         for (let i = 0; i < length; i++) {
-            const arg = args[i];
-            const templateArg = templateArgs[i];
-            if (!arg || !templateArg) {
-                reportArgumentCountMismatch(arg, args, templateArgs.length, command);
-                break;
+            const templateArg = templateArgs[templateIdx];
+            if (templateArg && (!templateArg.when || templateArg.when(values))) {
+                templateIdx++;
             }
 
-            const allowedTypes = getAllowedTypes(templateArg.type ?? []);
-            const [type, value] = resolveRuntimeTypeAndValue(arg, !allowedTypes.has("symbol"));
+            const arg = args[idx];
+            if (arg) {
+                const allowedTypes = getAllowedTypes(templateArg?.type ?? []);
+                const [type, value] = resolveRuntimeTypeAndValue(arg, !allowedTypes.has("symbol"));
+                values.push(value);
+                idx++;
 
-            if (templateArg.when && !templateArg.when?.(values)) {
-                break;
+                if (templateArg && !allowedTypes.has(type)) {
+                    diagnostics.push({
+                        message: `Expected argument type "${templateArg.type}", got "${type}".`,
+                        offset: arg.offset,
+                        length: arg.getLength()
+                    });
+                }
             }
-            values.push(value);
-
-            if (!allowedTypes.has(type)) {
-                diagnostics.push({
-                    message: `Expected argument type "${templateArg.type}", got "${type}".`,
-                    offset: arg.offset,
-                    length: arg.getLength()
-                });
-            }
+        }
+        if (args.length !== templateIdx) {
+            reportArgumentCountMismatch(command, templateIdx);
         }
     }
 
-    function reportArgumentCountMismatch(arg: Argument, args: Argument[], templateArgLength: number, parent: Parent) {
-        const [start, end] = arg
-            ? [arg.offset, args.at(-1)!.getEnd()]
-            : [parent.offset, parent.getEnd()];
+    function reportArgumentCountMismatch(parent: Parent, expectedLength: number) {
+        const { arguments: args } = parent;
+        const isMoreThan = args.length > expectedLength;
+        const start = (isMoreThan ? args[expectedLength] : parent).offset;
+        const end = (isMoreThan ? args.at(-1)! : parent).getEnd();
         diagnostics.push({
-            message: `Expected ${templateArgLength} argument(s), got ${args.length}.`,
+            message: `Expected ${expectedLength} argument(s), got ${args.length}.`,
             offset: start,
             length: end - start
         });

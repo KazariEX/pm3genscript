@@ -7,7 +7,6 @@ export interface MacroTemplate {
         content: string;
         description?: string;
     };
-    redirect?: string;
     arguments?: MacroArgumentTemplate[];
 }
 
@@ -25,7 +24,6 @@ export interface CommandTemplate {
     value?: number;
     description?: Partial<Record<"en" | "zh", string>>;
     ending?: boolean;
-    redirect?: string;
     bytes?: number;
     arguments?: CommandArgumentTemplate[];
 }

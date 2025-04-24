@@ -1,4 +1,4 @@
-import { commands, macros } from "@pm3genscript/shared";
+import { commands, type CommandTemplate, macros, type MacroTemplate } from "@pm3genscript/shared";
 
 export abstract class Node {
     constructor(
@@ -70,11 +70,12 @@ export class Macro extends Parent {
 
     constructor(offset: number, name: Identifier) {
         super("macro", offset, name);
-        this.canonicalName = macros[name.value]?.redirect ?? name.value;
+        const template = macros[name.value];
+        this.canonicalName = template && Reflect.get(template, "redirect") || name.value;
     }
 
     get template() {
-        return macros[this.canonicalName];
+        return macros[this.canonicalName] as MacroTemplate;
     }
 }
 
@@ -83,11 +84,12 @@ export class Command extends Parent {
 
     constructor(name: Identifier) {
         super("command", name.offset, name);
-        this.canonicalName = commands[name.value]?.redirect ?? name.value;
+        const template = commands[name.value];
+        this.canonicalName = template && Reflect.get(template, "redirect") || name.value;
     }
 
     get template() {
-        return commands[this.canonicalName];
+        return commands[this.canonicalName] as CommandTemplate;
     }
 }
 
