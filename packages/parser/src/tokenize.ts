@@ -38,7 +38,7 @@ export function tokenize(text: string) {
                     do {
                         value += next;
                         next = text[++idx];
-                    } while (idx < textLength && isUppercaseAlpha(next) || isNumeric(next) || next === "_");
+                    } while (idx < textLength && (isUppercaseAlpha(next) || isNumeric(next) || next === "_"));
                     add("symbol", value, offset);
                     break;
                 }
