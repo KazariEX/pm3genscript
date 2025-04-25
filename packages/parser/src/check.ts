@@ -106,7 +106,7 @@ export function check(ast: Root) {
         if (dynamics.has(name)) {
             dynamics.get(name)!.references.push(node);
         }
-        else {
+        else if (name) {
             diagnostics.push({
                 message: `Dynamic offset "@${name}" is not defined.`,
                 offset: node.offset,
@@ -143,11 +143,13 @@ export function check(ast: Root) {
     function checkMacro(macro: Macro) {
         const { template } = macro;
         if (!template) {
+            if (macro.name.value) {
             diagnostics.push({
                 message: `Unknown macro "${macro.name.value}".`,
                 offset: macro.name.offset,
                 length: macro.name.getLength()
             });
+            }
             return;
         }
 
