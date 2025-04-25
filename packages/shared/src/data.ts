@@ -1,5 +1,23 @@
 import type { CommandTemplate, MacroTemplate } from "./types";
 
+export const argumentTypes = new Set([
+    "byte",
+    "word",
+    "dword",
+    "pointer",
+    "number",
+    "string",
+    "identifier",
+    "symbol"
+]);
+
+export const rawTypes = [
+    ["byte", "b", "char"],
+    ["word", "i", "int", "integer"],
+    ["dword", "l", "long"],
+    ["pointer", "p", "ptr"]
+].flat();
+
 export const macros: Record<string, MacroTemplate | {
     redirect: string;
 }> = {
@@ -76,6 +94,34 @@ export const macros: Record<string, MacroTemplate | {
             \n#org @main`,
             description: "在第一个例子中，我们选择从 0x800000 开始书写脚本；在第二个例子中，我们使用了一个名为 main 的动态标签来获取合适的偏移量。"
         }
+    },
+    raw: {
+        alias: ["binary", "put"],
+        description: {
+            zh: `
+            \n在 ROM 中直接插入原始数据。
+            \n要确定使用的数据类型，在后面的任何值前添加类型的名称即可。
+            \n如果没有指定类型，插入的值将被视为字节。
+            \n可能的数据类型包括：
+            \n- **byte** (also **b** or **char**)
+            \n- **word** (also **i**, **int** or **integer**)
+            \n- **dword** (also **l** or **long**)
+            \n- **pointer** (also **p** or **ptr**)`
+        },
+        arguments: [
+            {
+                name: "data-type",
+                enum: rawTypes
+            },
+            {
+                name: "value",
+                type: ["byte", "word", "dword", "pointer"]
+            }
+        ],
+        example: {
+            content: "#raw 0xA 0x32 word 0x43BC dword 0xDA740D1 pointer 0x810000",
+            description: "这个例子将输出两个字节、一个字、一个双字和一个指针。指针将受到 autobank 系统的影响，但双字不会。"
+        }
     }
 };
 
@@ -103,6 +149,41 @@ export const commands: Record<string, CommandTemplate | {
         },
         bytes: 1,
         ending: true
+    },
+    applymovement: {
+        value: 0x4F,
+        description: {
+            en: `Applies the movement data found at the specified pointer to a sprite.`,
+            zh: `读取指定地址上的移动数据，应用于屏幕或当前地图上的人物。`
+        },
+        bytes: 7,
+        arguments: [
+            {
+                name: "people",
+                type: "word",
+                description: "People # to use"
+            },
+            {
+                name: "offset",
+                type: "pointer",
+                description: "Pointer to the movement data"
+            }
+        ]
+    },
+    waitmovement: {
+        value: 0x51,
+        description: {
+            en: `Waits for applymovement to finish.`,
+            zh: `等待 applymovement 指令完成。`
+        },
+        bytes: 3,
+        arguments: [
+            {
+                name: "people",
+                type: "word",
+                description: "People # to wait for"
+            }
+        ]
     },
     trainerbattle: {
         value: 0x5C,

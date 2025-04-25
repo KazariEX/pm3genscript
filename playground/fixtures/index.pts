@@ -2,7 +2,12 @@
 
 #org @1
 msgbox @2 MSG_FACE
+applymovement 0xFF @3
+waitmovement 0x0
 end
 
 #org @2
 = "你自己魔怔吧，我要去二次元了。"
+
+#org @3
+#raw 0x16 0xFE

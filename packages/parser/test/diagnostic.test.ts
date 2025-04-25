@@ -61,6 +61,24 @@ describe("macro", () => {
     });
 });
 
+describe("macro:raw", () => {
+    it("argument enum mismatch", () => {
+        diagnose(`#raw string "233"`, 0, {
+            message: `Value is not accepted. Valid values: "byte", "b", "char", "word", "i", "int", "integer", "dword", "l", "long", "pointer", "p", "ptr".`,
+            offset: 5,
+            length: 6
+        });
+    });
+
+    it("argument type mismatch", () => {
+        diagnose(`#raw byte 0x2333`, 0, {
+            message: `Expected argument type "byte", got "word".`,
+            offset: 10,
+            length: 6
+        });
+    });
+});
+
 describe("command", () => {
     it("not inside block", () => {
         diagnose(`msgbox 0xA 0x2`, 0, {

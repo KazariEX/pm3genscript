@@ -1,5 +1,6 @@
-import type { ArgumentType } from "@pm3genscript/shared";
+import { type ArgumentType, argumentTypes } from "@pm3genscript/shared";
 import { isBlock, isCommand, isDynamic, isIdentifier, isMacro, isNumberLiteral, isStringLiteral, isSymbol } from "./utils/is";
+import { joinWords, joinWordsOr, toArray } from "./utils/shared";
 import { forEachNode, forEachStatement } from "./utils/traverse";
 import type { Argument, Command, Dynamic, Macro, Parent, Root, Symbol } from "./node";
 import type { Diagnostic } from "./types";
@@ -144,12 +145,17 @@ export function check(ast: Root) {
         const { template } = macro;
         if (!template) {
             if (macro.name.value) {
-            diagnostics.push({
-                message: `Unknown macro "${macro.name.value}".`,
-                offset: macro.name.offset,
-                length: macro.name.getLength()
-            });
+                diagnostics.push({
+                    message: `Unknown macro "${macro.name.value}".`,
+                    offset: macro.name.offset,
+                    length: macro.name.getLength()
+                });
             }
+            return;
+        }
+
+        if (macro.canonicalName === "raw") {
+            checkRaw(macro);
             return;
         }
 
@@ -161,7 +167,7 @@ export function check(ast: Root) {
             const arg = args[i];
             const templateArg = templateArgs[i];
             if (!arg || !templateArg) {
-                reportArgumentCountMismatch(macro, templateArgs.length);
+                mismatchArgumentCount(macro, templateArgs.length);
                 break;
             }
 
@@ -171,20 +177,38 @@ export function check(ast: Root) {
 
             if (templateArg.enum) {
                 if (!templateArg.enum.includes(value)) {
-                    diagnostics.push({
-                        message: `Value "${value}" is not allowed for argument "${templateArg.name}".`,
-                        offset: arg.offset,
-                        length: arg.getLength()
-                    });
+                    mismatchArgumentEnum(arg, templateArg.enum);
                 }
             }
             else if (!allowedTypes.has(type)) {
-                diagnostics.push({
-                    message: `Expected argument type "${templateArg.type}", got "${type}".`,
-                    offset: arg.offset,
-                    length: arg.getLength()
-                });
+                mismatchArgumentType(arg, type, templateArg.type ?? []);
             }
+        }
+    }
+
+    function checkRaw(macro: Macro) {
+        const { arguments: args } = macro;
+        const [templateArg0, templateArg1] = macro.template.arguments!;
+
+        let prev: string | undefined;
+        for (let i = 0; i < args.length; i++) {
+            const arg = args[i];
+            const [type, value] = resolveRuntimeTypeAndValue(arg);
+            if (type === "identifier") {
+                if (!templateArg0.enum!.includes(value)) {
+                    mismatchArgumentEnum(arg, templateArg0.enum!);
+                }
+                prev = normalizeRawType(value);
+                continue;
+            }
+            else {
+                const originalType = prev && argumentTypes.has(prev) ? prev as ArgumentType : templateArg1.type!;
+                const allowedTypes = getAllowedTypes(originalType);
+                if (!allowedTypes.has(type)) {
+                    mismatchArgumentType(arg, type, originalType);
+                }
+            }
+            prev = void 0;
         }
     }
 
@@ -210,20 +234,16 @@ export function check(ast: Root) {
                 idx++;
 
                 if (templateArg && !allowedTypes.has(type)) {
-                    diagnostics.push({
-                        message: `Expected argument type "${templateArg.type}", got "${type}".`,
-                        offset: arg.offset,
-                        length: arg.getLength()
-                    });
+                    mismatchArgumentType(arg, type, templateArg.type);
                 }
             }
         }
         if (args.length !== templateIdx) {
-            reportArgumentCountMismatch(command, templateIdx);
+            mismatchArgumentCount(command, templateIdx);
         }
     }
 
-    function reportArgumentCountMismatch(parent: Parent, expectedLength: number) {
+    function mismatchArgumentCount(parent: Parent, expectedLength: number) {
         const { arguments: args } = parent;
         const isMoreThan = args.length > expectedLength;
         const start = (isMoreThan ? args[expectedLength] : parent).offset;
@@ -232,6 +252,23 @@ export function check(ast: Root) {
             message: `Expected ${expectedLength} argument(s), got ${args.length}.`,
             offset: start,
             length: end - start
+        });
+    }
+
+    function mismatchArgumentEnum(arg: Argument, expectedValues: string[]) {
+        diagnostics.push({
+            message: `Value is not accepted. Valid values: ${joinWords(expectedValues)}.`,
+            offset: arg.offset,
+            length: arg.getLength()
+        });
+    }
+
+    function mismatchArgumentType(arg: Argument, type: ArgumentType, expectedType: ArgumentType | ArgumentType[]) {
+        const types = toArray(expectedType);
+        diagnostics.push({
+            message: `Expected argument type ${joinWordsOr(types)}, got "${type}".`,
+            offset: arg.offset,
+            length: arg.getLength()
         });
     }
 
@@ -281,7 +318,7 @@ export function check(ast: Root) {
 }
 
 function getAllowedTypes(type: ArgumentType | ArgumentType[]) {
-    const types = Array.isArray(type) ? type : [type];
+    const types = [...toArray(type)];
     if (types.includes("number") || types.includes("dword") || types.includes("pointer")) {
         types.push("byte", "word", "dword", "pointer");
     }
@@ -289,4 +326,24 @@ function getAllowedTypes(type: ArgumentType | ArgumentType[]) {
         types.push("byte");
     }
     return new Set(types);
+}
+
+function normalizeRawType(type: string) {
+    switch (type) {
+        case "b":
+        case "char":
+            return "byte";
+        case "i":
+        case "int":
+        case "integer":
+            return "word";
+        case "l":
+        case "long":
+            return "dword";
+        case "p":
+        case "ptr":
+            return "pointer";
+        default:
+            return type;
+    }
 }

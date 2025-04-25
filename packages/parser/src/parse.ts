@@ -2,7 +2,8 @@ import { commands } from "@pm3genscript/shared";
 import { Block, Command, Dynamic, Identifier, Macro, type Node, NumberLiteral, Root, StringLiternal, Symbol } from "./node";
 import { tokenize } from "./tokenize";
 import { isCommand } from "./utils/is";
-import type { Diagnostic, Token } from "./types";
+import { joinWordsOr } from "./utils/shared";
+import type { Diagnostic, Token, TokenType } from "./types";
 
 export function parse(text: string) {
     const tokenized = tokenize(text);
@@ -39,11 +40,7 @@ export function walkTokens(text: string, tokens: Token[]) {
                 }
                 else {
                     name = new Identifier(token.offset + token.value.length, "");
-                    diagnostics.push({
-                        message: `Expected "identifier" token after "#", got "${next.type}".`,
-                        offset: next.offset,
-                        length: next.value.length
-                    });
+                    mismatchAfter(token, next, "identifier");
                 }
                 const macro = new Macro(token.offset, name);
                 if (macro.canonicalName === "org") {
@@ -70,11 +67,7 @@ export function walkTokens(text: string, tokens: Token[]) {
                 }
                 else {
                     name = new Identifier(token.offset + token.value.length, "");
-                    diagnostics.push({
-                        message: `Expected "identifier" or "number" token after "@", got "${next.type}".`,
-                        offset: next.offset,
-                        length: next.value.length
-                    });
+                    mismatchAfter(token, next, "identifier", "number");
                 }
                 const dynamic = new Dynamic(token.offset, name);
                 attach(dynamic);
@@ -127,5 +120,13 @@ export function walkTokens(text: string, tokens: Token[]) {
     function attach(node: Node) {
         const container = isCommand(node) ? currentBlock?.children : parents[0]?.arguments;
         (container ?? root.children).push(node);
+    }
+
+    function mismatchAfter(token: Token, next: Token | undefined, ...expectedTypes: TokenType[]) {
+        diagnostics.push({
+            message: `Expected ${joinWordsOr(expectedTypes)} token after "${token.value}"${next ? `, got "${next.type}"` : ""}.`,
+            offset: next?.offset ?? (token.offset + token.value.length),
+            length: next?.value.length ?? 0
+        });
     }
 }

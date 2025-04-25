@@ -30,7 +30,7 @@ export interface CommandTemplate {
 
 export interface CommandArgumentTemplate {
     name: string;
-    type?: ArgumentType;
+    type: ArgumentType;
     description?: string;
     when?: (args: any[]) => boolean;
 }
