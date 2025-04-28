@@ -5,7 +5,7 @@
   "scripts": {
     "build": "pnpm -r build",
     "dev": "pnpm -C packages/vscode dev",
-    "prepare": "zin readme --sync pm3genscript",
+    "prepare": "zin link pm3genscript",
     "release": "bumpp --no-push -c \"release: v%s\"",
     "test": "vitest"
   },

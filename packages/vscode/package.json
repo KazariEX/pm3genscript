@@ -12,7 +12,7 @@
   ],
   "main": "./dist/client.js",
   "engines": {
-    "vscode": "^1.78.0"
+    "vscode": "^1.89.0"
   },
   "contributes": {
     "languages": [
@@ -38,15 +38,18 @@
   "scripts": {
     "build": "rolldown -c",
     "dev": "rolldown -w -c",
-    "prepack": "pnpm run build"
-  },
-  "dependencies": {
-    "@volar/language-server": "catalog:",
-    "@volar/vscode": "catalog:",
-    "reactive-vscode": "catalog:"
+    "prepack": "pnpm run build",
+    "pack": "tsx scripts/pack.ts"
   },
   "devDependencies": {
+    "@types/node": "catalog:",
     "@types/vscode": "catalog:",
-    "rolldown": "catalog:"
+    "@volar/language-server": "catalog:",
+    "@volar/vscode": "catalog:",
+    "@vscode/vsce": "catalog:",
+    "reactive-vscode": "catalog:",
+    "rolldown": "catalog:",
+    "tsx": "catalog:",
+    "zx": "catalog:"
   }
 }

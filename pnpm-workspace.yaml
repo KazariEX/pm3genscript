@@ -3,19 +3,23 @@ packages:
 
 catalog:
   "@antfu/eslint-config": ^4.12.0
+  "@types/node": ^22.15.2
   "@types/vscode": ^1.99.1
   "@volar/language-server": ^2.4.12
   "@volar/vscode": ^2.4.12
+  "@vscode/vsce": ^3.3.2
   "@zinkawaii/eslint-config": ^0.2.3
-  "@zinkawaii/scripts": ^0.0.1
+  "@zinkawaii/scripts": ^0.0.2
   "@zinkawaii/tsconfig": ^0.0.1
   bumpp: ^10.1.0
   eslint: ^9.25.1
   reactive-vscode: ^0.2.14
   rolldown: 1.0.0-beta.8
   tsdown: ^0.9.6
+  tsx: ^4.19.3
   vitest: ^3.1.2
   vscode-uri: ^3.1.0
+  zx: ^8.5.3
 
 onlyBuiltDependencies:
   - esbuild
