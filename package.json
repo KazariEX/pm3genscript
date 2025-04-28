@@ -5,12 +5,14 @@
   "scripts": {
     "build": "pnpm -r build",
     "dev": "pnpm -C packages/vscode dev",
+    "prepare": "zin readme --sync pm3genscript",
     "release": "bumpp --no-push -c \"release: v%s\"",
     "test": "vitest"
   },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:",
     "@zinkawaii/eslint-config": "catalog:",
+    "@zinkawaii/scripts": "catalog:",
     "@zinkawaii/tsconfig": "catalog:",
     "bumpp": "catalog:",
     "eslint": "catalog:",

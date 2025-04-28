@@ -7,6 +7,7 @@ catalog:
   "@volar/language-server": ^2.4.12
   "@volar/vscode": ^2.4.12
   "@zinkawaii/eslint-config": ^0.2.3
+  "@zinkawaii/scripts": ^0.0.1
   "@zinkawaii/tsconfig": ^0.0.1
   bumpp: ^10.1.0
   eslint: ^9.25.1

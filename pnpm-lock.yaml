@@ -21,6 +21,9 @@ catalogs:
     '@zinkawaii/eslint-config':
       specifier: ^0.2.3
       version: 0.2.3
+    '@zinkawaii/scripts':
+      specifier: ^0.0.1
+      version: 0.0.1
     '@zinkawaii/tsconfig':
       specifier: ^0.0.1
       version: 0.0.1
@@ -56,6 +59,9 @@ importers:
       '@zinkawaii/eslint-config':
         specifier: 'catalog:'
         version: 0.2.3
+      '@zinkawaii/scripts':
+        specifier: 'catalog:'
+        version: 0.0.1
       '@zinkawaii/tsconfig':
         specifier: 'catalog:'
         version: 0.0.1
@@ -86,6 +92,15 @@ importers:
 
   packages/parser:
     dependencies:
+      '@pm3genscript/shared':
+        specifier: workspace:^
+        version: link:../shared
+
+  packages/pm3genscript:
+    dependencies:
+      '@pm3genscript/parser':
+        specifier: workspace:^
+        version: link:../parser
       '@pm3genscript/shared':
         specifier: workspace:^
         version: link:../shared
@@ -1128,6 +1143,10 @@ packages:
 
   '@zinkawaii/eslint-config@0.2.3':
     resolution: {integrity: sha512-T4qqClP+R8FsaEPdodVcefcaR79O6xR2caC51Wqnuxi/PtFocAloRN97GgBELaaD2lFLuZrr1YEqHEQWSVeoSg==}
+
+  '@zinkawaii/scripts@0.0.1':
+    resolution: {integrity: sha512-95B1deVoj2kWPLu7IL2lJGuuYnvHVb/IgxwJY9UNkewcFBowV8NZhQtBN3Qxdykp7Hqt3a6cXWUhsjFVIM09Zg==}
+    hasBin: true
 
   '@zinkawaii/tsconfig@0.0.1':
     resolution: {integrity: sha512-uO40UtaaIMjc88J/NdKaF0O8mP3fm/jBhiCoMAHdCzSfincB4KJ5ddCf1yhzj8Inxl+MwjirXKAQ5e7QaLawGg==}
@@ -3380,6 +3399,10 @@ snapshots:
   '@vue/shared@3.5.13': {}
 
   '@zinkawaii/eslint-config@0.2.3': {}
+
+  '@zinkawaii/scripts@0.0.1':
+    dependencies:
+      citty: 0.1.6
 
   '@zinkawaii/tsconfig@0.0.1': {}
 
