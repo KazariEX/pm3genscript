@@ -6,7 +6,7 @@
     "build": "pnpm -r build",
     "dev": "pnpm -C packages/vscode dev",
     "prepare": "zin link pm3genscript",
-    "release": "bumpp --no-push -c \"release: v%s\"",
+    "release": "bumpp -r --no-push -c \"release: v%s\"",
     "test": "vitest"
   },
   "devDependencies": {

@@ -1,7 +1,7 @@
 {
   "name": "@pm3genscript/shared",
   "type": "module",
-  "version": "0.0.0",
+  "version": "0.1.10",
   "description": "Shared data for pm3genscript",
   "author": "KazariEX",
   "license": "MIT",
