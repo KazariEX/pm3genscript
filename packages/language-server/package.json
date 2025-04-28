@@ -24,7 +24,7 @@
     "prepack": "pnpm run build"
   },
   "dependencies": {
-    "@pm3genscript/parser": "workspace:",
+    "@pm3genscript/parser": "workspace:^",
     "@volar/language-server": "catalog:",
     "vscode-uri": "catalog:"
   }

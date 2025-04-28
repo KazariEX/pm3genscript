@@ -8,5 +8,8 @@ export default defineConfig({
     output: {
         format: "cjs",
         sourcemap: true
-    }
+    },
+    external: [
+        "vscode"
+    ]
 });

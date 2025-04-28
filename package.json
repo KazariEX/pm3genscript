@@ -1,10 +1,10 @@
 {
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.9.0",
+  "packageManager": "pnpm@10.10.0",
   "scripts": {
     "build": "pnpm -r build",
-    "dev": "pnpm -r --filter \"!@pm3genscript/language-server\" --parallel dev",
+    "dev": "pnpm -C packages/vscode dev",
     "release": "bumpp --no-push -c \"release: v%s\"",
     "test": "vitest"
   },
